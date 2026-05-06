@@ -35,35 +35,36 @@ HEADERS = {
 # ── エリア定義 ─────────────────────────────────────────────────
 # (エリア名, ベースURL, 徒歩分数)
 SEARCH_AREAS = [
-    # 1. 奈良駅エリア（JR奈良駅・近鉄奈良駅、徒歩15分）
-    ("JR奈良駅",   "https://www.athome.co.jp/chintai/nara/nara-st",          15),
-    ("近鉄奈良駅", "https://www.athome.co.jp/chintai/nara/kintetsunara-st",  15),
+    # 1. 奈良駅エリア（JR奈良駅・近鉄奈良駅、徒歩10分・家賃8万以上）
+    # (エリア名, ベースURL, 徒歩分数, 家賃下限(万円) or None)
+    ("JR奈良駅",   "https://www.athome.co.jp/chintai/nara/nara-st",          10, 8),
+    ("近鉄奈良駅", "https://www.athome.co.jp/chintai/nara/kintetsunara-st",  10, 8),
 
     # 2. 埼玉エリア（各駅徒歩10分）
-    ("ふじみ野駅", "https://www.athome.co.jp/chintai/saitama/fujimino-st",         10),
-    ("和光市駅",   "https://www.athome.co.jp/chintai/saitama/wako-st",             10),
-    ("上尾駅",     "https://www.athome.co.jp/chintai/saitama/ageo-st",             10),
-    ("熊谷駅",     "https://www.athome.co.jp/chintai/saitama/kumagaya-st",         10),
-    ("春日部駅",   "https://www.athome.co.jp/chintai/saitama/kasukabe-st",         10),
-    ("川越駅",     "https://www.athome.co.jp/chintai/saitama/kawagoe-st",          10),
-    ("浦和駅",     "https://www.athome.co.jp/chintai/saitama/urawa-st",            10),
-    ("所沢駅",     "https://www.athome.co.jp/chintai/saitama/tokorozawa-st",       10),
-    ("南越谷駅",   "https://www.athome.co.jp/chintai/saitama/minamikoshigaya-st",  10),
-    ("志木駅",     "https://www.athome.co.jp/chintai/saitama/shiki-st",            10),
+    ("ふじみ野駅", "https://www.athome.co.jp/chintai/saitama/fujimino-st",         10, None),
+    ("和光市駅",   "https://www.athome.co.jp/chintai/saitama/wako-st",             10, None),
+    ("上尾駅",     "https://www.athome.co.jp/chintai/saitama/ageo-st",             10, None),
+    ("熊谷駅",     "https://www.athome.co.jp/chintai/saitama/kumagaya-st",         10, None),
+    ("春日部駅",   "https://www.athome.co.jp/chintai/saitama/kasukabe-st",         10, None),
+    ("川越駅",     "https://www.athome.co.jp/chintai/saitama/kawagoe-st",          10, None),
+    ("浦和駅",     "https://www.athome.co.jp/chintai/saitama/urawa-st",            10, None),
+    ("所沢駅",     "https://www.athome.co.jp/chintai/saitama/tokorozawa-st",       10, None),
+    ("南越谷駅",   "https://www.athome.co.jp/chintai/saitama/minamikoshigaya-st",  10, None),
+    ("志木駅",     "https://www.athome.co.jp/chintai/saitama/shiki-st",            10, None),
 
     # 3. 八王子エリア（徒歩10分）
-    ("八王子駅",   "https://www.athome.co.jp/chintai/tokyo/hachioji-st",           10),
+    ("八王子駅",   "https://www.athome.co.jp/chintai/tokyo/hachioji-st",           10, None),
 
     # 4. 東京東部エリア（徒歩7分）
-    ("錦糸町駅",   "https://www.athome.co.jp/chintai/tokyo/kinshicho-st",           7),
-    ("小岩駅",     "https://www.athome.co.jp/chintai/tokyo/koiwa-st",               7),
-    ("新小岩駅",   "https://www.athome.co.jp/chintai/tokyo/shinkoiwa-st",           7),
+    ("錦糸町駅",   "https://www.athome.co.jp/chintai/tokyo/kinshicho-st",           7, None),
+    ("小岩駅",     "https://www.athome.co.jp/chintai/tokyo/koiwa-st",               7, None),
+    ("新小岩駅",   "https://www.athome.co.jp/chintai/tokyo/shinkoiwa-st",           7, None),
 
     # 5. 北関東エリア（徒歩15分）
-    ("高崎駅",     "https://www.athome.co.jp/chintai/gunma/takasaki-st",           15),
-    ("水戸駅",     "https://www.athome.co.jp/chintai/ibaraki/mito-st",             15),
-    ("研究学園駅", "https://www.athome.co.jp/chintai/ibaraki/kenkyugakuen-st",     15),
-    ("宇都宮駅",   "https://www.athome.co.jp/chintai/tochigi/utsunomiya-st",       15),
+    ("高崎駅",     "https://www.athome.co.jp/chintai/gunma/takasaki-st",           15, None),
+    ("水戸駅",     "https://www.athome.co.jp/chintai/ibaraki/mito-st",             15, None),
+    ("研究学園駅", "https://www.athome.co.jp/chintai/ibaraki/kenkyugakuen-st",     15, None),
+    ("宇都宮駅",   "https://www.athome.co.jp/chintai/tochigi/utsunomiya-st",       15, None),
 ]
 
 
@@ -182,12 +183,15 @@ def format_message(area_name: str, prop: dict) -> str:
 PROP_ID_RE = re.compile(r"/chintai/(\d{8,12})/")
 
 def scrape_area(area_name: str, base_url: str, walk_limit: int,
-                today_str: str, seen: dict, is_first_run: bool) -> int:
+                today_str: str, seen: dict, is_first_run: bool,
+                rent_min: int | None = None) -> int:
     walk_path = f"{walk_limit}-min"
     notified  = 0
 
     for page in range(1, 4):
         params = f"menseki_from={AREA_MIN_SQM}&menseki_to={AREA_MAX_SQM - 1}&chinryou_to={RENT_MAX_MAN}"
+        if rent_min is not None:
+            params += f"&chinryou_from={rent_min}"
         if page == 1:
             url = f"{base_url}/{walk_path}/list/?{params}"
         else:
@@ -250,7 +254,10 @@ def scrape_area(area_name: str, base_url: str, walk_limit: int,
 
             # 家賃フィルタ（取得できた場合のみ）
             if rent_man is not None and rent_man > RENT_MAX_MAN:
-                print(f"    家賃NG: {rent_man}万円")
+                print(f"    家賃NG（上限超過）: {rent_man}万円")
+                continue
+            if rent_min is not None and rent_man is not None and rent_man < rent_min:
+                print(f"    家賃NG（下限未満）: {rent_man}万円")
                 continue
 
             # 物件名
@@ -301,9 +308,9 @@ def main():
         print("【初回実行】物件IDを登録するのみ（通知なし）")
 
     total = 0
-    for area_name, base_url, walk_limit in SEARCH_AREAS:
+    for area_name, base_url, walk_limit, rent_min in SEARCH_AREAS:
         print(f"\n== {area_name} ==")
-        total += scrape_area(area_name, base_url, walk_limit, today_str, seen, is_first_run)
+        total += scrape_area(area_name, base_url, walk_limit, today_str, seen, is_first_run, rent_min)
         time.sleep(8)
 
     print(f"\n通知合計: {total}件")
