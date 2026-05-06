@@ -53,6 +53,11 @@ SEARCH_AREAS = [
 
     # 3. 八王子エリア（徒歩10分）
     ("八王子駅",   "https://www.athome.co.jp/chintai/tokyo/hachioji-st",           10),
+
+    # 4. 東京東部エリア（徒歩7分）
+    ("錦糸町駅",   "https://www.athome.co.jp/chintai/tokyo/kinshicho-st",           7),
+    ("小岩駅",     "https://www.athome.co.jp/chintai/tokyo/koiwa-st",               7),
+    ("新小岩駅",   "https://www.athome.co.jp/chintai/tokyo/shinkoiwa-st",           7),
 ]
 
 
