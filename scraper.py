@@ -154,7 +154,7 @@ def format_message(area_name: str, prop: dict) -> str:
     url   = prop.get("url", "")
 
     return (
-        f"[info][title]🏋 新着賃貸【{area_name}エリア】\n{name}[/title]\n"
+        f"[toall]\n[info][title]🏋 新着賃貸【{area_name}エリア】\n{name}[/title]\n"
         f"URL：{url}\n\n"
         f"【物件情報】\n"
         f"・家賃　　：{rent}\n"
