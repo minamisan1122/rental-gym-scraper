@@ -9,8 +9,8 @@ from datetime import datetime
 
 # ── 検索条件 ──────────────────────────────────────────────────
 RENT_MAX_MAN  = 20    # 家賃上限20万円
-AREA_MIN_SQM  = 20    # 20㎡以上
-AREA_MAX_SQM  = 50    # 50㎡未満
+AREA_MIN_SQM  = 30    # 30㎡以上
+AREA_MAX_SQM  = 80    # 80㎡未満
 
 # ── 環境変数 ──────────────────────────────────────────────────
 CHATWORK_API_TOKEN = os.environ.get("CHATWORK_API_TOKEN")
