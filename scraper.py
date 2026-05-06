@@ -59,11 +59,11 @@ SEARCH_AREAS = [
     ("小岩駅",     "https://www.athome.co.jp/chintai/tokyo/koiwa-st",               7),
     ("新小岩駅",   "https://www.athome.co.jp/chintai/tokyo/shinkoiwa-st",           7),
 
-    # 5. 北関東エリア（徒歩10分）
-    ("高崎駅",     "https://www.athome.co.jp/chintai/gunma/takasaki-st",           10),
-    ("水戸駅",     "https://www.athome.co.jp/chintai/ibaraki/mito-st",             10),
-    ("研究学園駅", "https://www.athome.co.jp/chintai/ibaraki/kenkyugakuen-st",     10),
-    ("宇都宮駅",   "https://www.athome.co.jp/chintai/tochigi/utsunomiya-st",       10),
+    # 5. 北関東エリア（徒歩15分）
+    ("高崎駅",     "https://www.athome.co.jp/chintai/gunma/takasaki-st",           15),
+    ("水戸駅",     "https://www.athome.co.jp/chintai/ibaraki/mito-st",             15),
+    ("研究学園駅", "https://www.athome.co.jp/chintai/ibaraki/kenkyugakuen-st",     15),
+    ("宇都宮駅",   "https://www.athome.co.jp/chintai/tochigi/utsunomiya-st",       15),
 ]
 
 
