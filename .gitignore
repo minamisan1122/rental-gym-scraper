@@ -1,0 +1,4 @@
+seen_properties.json
+__pycache__/
+*.pyc
+.env
