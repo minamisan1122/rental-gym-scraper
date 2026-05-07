@@ -4,7 +4,7 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "cronSchedule": "0 */2 * * *",
+    "cronSchedule": "0 */3 * * *",
     "restartPolicyType": "ON_FAILURE"
   }
 }

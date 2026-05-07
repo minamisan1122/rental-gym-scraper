@@ -24,6 +24,7 @@ CHATWORK_API_TOKEN = os.environ.get("CHATWORK_API_TOKEN")
 CHATWORK_ROOM_ID   = os.environ.get("CHATWORK_ROOM_ID", "258471022")
 DATA_DIR           = os.environ.get("DATA_DIR", ".")
 SEEN_FILE          = os.path.join(DATA_DIR, "seen_properties.json")
+BATCH_FILE         = os.path.join(DATA_DIR, "current_batch.json")
 
 # Chromeバージョンをランダムローテーションしてフィンガープリントを分散させる
 CHROME_PROFILES = [
@@ -50,39 +51,54 @@ def get_headers(ua: str) -> dict:
 
 HEADERS = get_headers(CHROME_PROFILES[3][1])
 
-# ── エリア定義 ─────────────────────────────────────────────────
-# (エリア名, ベースURL, 徒歩分数)
-SEARCH_AREAS = [
-    # 1. 埼玉エリア（各駅徒歩10分）
-    ("ふじみ野駅", "https://www.athome.co.jp/rent_store/saitama/fujimino-st",         10, None),
-    ("和光市駅",   "https://www.athome.co.jp/rent_store/saitama/wako-st",             10, None),
-    ("熊谷駅",     "https://www.athome.co.jp/rent_store/saitama/kumagaya-st",         10, None),
-    ("春日部駅",   "https://www.athome.co.jp/rent_store/saitama/kasukabe-st",         10, None),
-    ("川越駅",     "https://www.athome.co.jp/rent_store/saitama/kawagoe-st",          10, None),
-    ("浦和駅",     "https://www.athome.co.jp/rent_store/saitama/urawa-st",            10, None),
-    ("所沢駅",     "https://www.athome.co.jp/rent_store/saitama/tokorozawa-st",       10, None),
-    ("南越谷駅",   "https://www.athome.co.jp/rent_store/saitama/minamikoshigaya-st",  10, None),
-    ("志木駅",     "https://www.athome.co.jp/rent_store/saitama/shiki-st",            10, None),
-
-    # 3. 八王子エリア（徒歩10分）
-    ("八王子駅",   "https://www.athome.co.jp/rent_store/tokyo/hachioji-st",           10, None),
-
-    # 4. 東京東部エリア（徒歩7分）
-    ("錦糸町駅",   "https://www.athome.co.jp/rent_store/tokyo/kinshicho-st",           7, None),
-    ("小岩駅",     "https://www.athome.co.jp/rent_store/tokyo/koiwa-st",               7, None),
-    ("新小岩駅",   "https://www.athome.co.jp/rent_store/tokyo/shinkoiwa-st",           7, None),
-
-    # 5. 北関東エリア（徒歩15分）
-    ("高崎駅",     "https://www.athome.co.jp/rent_store/gunma/takasaki-st",           15, None),
-    ("水戸駅",     "https://www.athome.co.jp/rent_store/ibaraki/mito-st",             15, None),
-    ("研究学園駅", "https://www.athome.co.jp/rent_store/ibaraki/kenkyugakuen-st",     15, None),
-    ("宇都宮駅",   "https://www.athome.co.jp/rent_store/tochigi/utsunomiya-st",       15, None),
+# ── エリア定義（バッチ分割） ────────────────────────────────────
+# 1回のセッションで6エリアを超えるとReese84にブロックされるため3グループに分割。
+# 3時間おきに1グループずつ処理し、全17エリアを9時間で1巡する。
+# (エリア名, ベースURL, 徒歩分数上限, 家賃下限)
+BATCHES = [
+    # バッチ0: 埼玉北部・中部（6エリア）
+    [
+        ("ふじみ野駅", "https://www.athome.co.jp/rent_store/saitama/fujimino-st",        10, None),
+        ("和光市駅",   "https://www.athome.co.jp/rent_store/saitama/wako-st",            10, None),
+        ("熊谷駅",     "https://www.athome.co.jp/rent_store/saitama/kumagaya-st",        10, None),
+        ("春日部駅",   "https://www.athome.co.jp/rent_store/saitama/kasukabe-st",        10, None),
+        ("川越駅",     "https://www.athome.co.jp/rent_store/saitama/kawagoe-st",         10, None),
+        ("浦和駅",     "https://www.athome.co.jp/rent_store/saitama/urawa-st",           10, None),
+    ],
+    # バッチ1: 埼玉南部・八王子・東京東部（6エリア）
+    [
+        ("所沢駅",     "https://www.athome.co.jp/rent_store/saitama/tokorozawa-st",      10, None),
+        ("南越谷駅",   "https://www.athome.co.jp/rent_store/saitama/minamikoshigaya-st", 10, None),
+        ("志木駅",     "https://www.athome.co.jp/rent_store/saitama/shiki-st",           10, None),
+        ("八王子駅",   "https://www.athome.co.jp/rent_store/tokyo/hachioji-st",          10, None),
+        ("錦糸町駅",   "https://www.athome.co.jp/rent_store/tokyo/kinshicho-st",          7, None),
+        ("小岩駅",     "https://www.athome.co.jp/rent_store/tokyo/koiwa-st",              7, None),
+    ],
+    # バッチ2: 東京東部・北関東（5エリア）
+    [
+        ("新小岩駅",   "https://www.athome.co.jp/rent_store/tokyo/shinkoiwa-st",          7, None),
+        ("高崎駅",     "https://www.athome.co.jp/rent_store/gunma/takasaki-st",          15, None),
+        ("水戸駅",     "https://www.athome.co.jp/rent_store/ibaraki/mito-st",            15, None),
+        ("研究学園駅", "https://www.athome.co.jp/rent_store/ibaraki/kenkyugakuen-st",    15, None),
+        ("宇都宮駅",   "https://www.athome.co.jp/rent_store/tochigi/utsunomiya-st",      15, None),
+    ],
 ]
+NUM_BATCHES = len(BATCHES)
 
 
 # ══════════════════════════════════════════════════════════════
 #  共通ユーティリティ
 # ══════════════════════════════════════════════════════════════
+
+def load_batch() -> int:
+    if os.path.exists(BATCH_FILE):
+        with open(BATCH_FILE) as f:
+            return json.load(f).get("batch", 0)
+    return 0
+
+def save_batch(batch_num: int):
+    with open(BATCH_FILE, "w") as f:
+        json.dump({"batch": batch_num}, f)
 
 def load_seen() -> dict:
     if os.path.exists(SEEN_FILE):
@@ -338,7 +354,13 @@ def scrape_area(area_name: str, base_url: str, walk_limit: int,
 
 def main():
     today_str = datetime.now().strftime("%Y-%m-%d")
+
+    current_batch = load_batch()
+    next_batch = (current_batch + 1) % NUM_BATCHES
+    areas = BATCHES[current_batch]
+
     print(f"=== Ratジム賃貸スクレイパー 開始 {today_str} ===")
+    print(f"バッチ {current_batch + 1}/{NUM_BATCHES}（{len(areas)}エリア）→ 次回はバッチ{next_batch + 1}")
 
     init_session()
 
@@ -348,18 +370,19 @@ def main():
         print("【初回実行】物件IDを登録するのみ（通知なし）")
 
     total = 0
-    for i, (area_name, base_url, walk_limit, rent_min) in enumerate(SEARCH_AREAS):
+    for i, (area_name, base_url, walk_limit, rent_min) in enumerate(areas):
         profile, ua = random.choice(CHROME_PROFILES)
         print(f"\n== {area_name} [{profile}] ==")
         total += scrape_area(area_name, base_url, walk_limit, today_str, seen, is_first_run,
                              rent_min, impersonate=profile, ua=ua)
-        if i < len(SEARCH_AREAS) - 1:
+        if i < len(areas) - 1:
             wait = random.uniform(90, 150)
             print(f"  → 次のエリアまで {wait:.0f}秒待機")
             time.sleep(wait)
 
     print(f"\n通知合計: {total}件")
     save_seen(seen)
+    save_batch(next_batch)
     print("完了")
 
 
