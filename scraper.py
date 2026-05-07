@@ -41,12 +41,7 @@ HEADERS = {
 # ── エリア定義 ─────────────────────────────────────────────────
 # (エリア名, ベースURL, 徒歩分数)
 SEARCH_AREAS = [
-    # 1. 奈良駅エリア（JR奈良駅・近鉄奈良駅、徒歩10分・家賃8万以上）
-    # (エリア名, ベースURL, 徒歩分数, 家賃下限(万円) or None)
-    ("JR奈良駅",   "https://www.athome.co.jp/chintai/nara/nara-st",          10, 8),
-    ("近鉄奈良駅", "https://www.athome.co.jp/chintai/nara/kintetsunara-st",  10, 8),
-
-    # 2. 埼玉エリア（各駅徒歩10分）
+    # 1. 埼玉エリア（各駅徒歩10分）
     ("ふじみ野駅", "https://www.athome.co.jp/chintai/saitama/fujimino-st",         10, None),
     ("和光市駅",   "https://www.athome.co.jp/chintai/saitama/wako-st",             10, None),
     ("上尾駅",     "https://www.athome.co.jp/chintai/saitama/ageo-st",             10, None),
