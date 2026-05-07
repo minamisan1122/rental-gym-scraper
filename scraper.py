@@ -203,13 +203,10 @@ def scrape_area(area_name: str, base_url: str, walk_limit: int,
     session   = cffi_requests.Session() if _CFFI_AVAILABLE else None
 
     for page in range(1, 4):
-        params = f"menseki_from={AREA_MIN_SQM}&menseki_to={AREA_MAX_SQM - 1}&chinryou_to={RENT_MAX_MAN}&toho_to={walk_limit}"
-        if rent_min is not None:
-            params += f"&chinryou_from={rent_min}"
         if page == 1:
-            url = f"{base_url}/list/?{params}"
+            url = f"{base_url}/list/"
         else:
-            url = f"{base_url}/list/?{params}&page={page}"
+            url = f"{base_url}/list/?page={page}"
 
         html = fetch(url, session=session)
         if html is None:
