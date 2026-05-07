@@ -168,10 +168,10 @@ def fetch_with_retry(url: str, impersonate: str, ua: str) -> str | None:
             return None
     return result
 
-def parse_rent(text: str) -> int | None:
+def parse_rent(text: str) -> float | None:
     m = re.search(r"([\d.]+)\s*万円", text)
     if m:
-        return int(float(m.group(1)))
+        return float(m.group(1))
     return None
 
 def parse_area(text: str) -> float | None:
@@ -213,7 +213,11 @@ def send_chatwork(msg: str):
             print(f"  Chatwork error: {e}")
 
 def format_message(area_name: str, prop: dict) -> str:
-    rent  = f"{prop['rent_man']}万円/月" if prop.get("rent_man") else "不明"
+    if prop.get("rent_man") is not None:
+        r = prop["rent_man"]
+        rent = f"{r:.1f}万円/月" if r != int(r) else f"{int(r)}万円/月"
+    else:
+        rent = "不明"
     area  = f"{prop['area_sqm']}㎡" if prop.get("area_sqm") else "不明"
     walk  = f"徒歩{prop['walk_min']}分" if prop.get("walk_min") else "不明"
     name  = prop.get("name") or "（名称不明）"
@@ -291,7 +295,7 @@ def scrape_area(area_name: str, base_url: str, walk_limit: int,
 
             text = card.get_text(separator=" ", strip=True)
             area_sqm = parse_area(text)
-            rent_man = parse_rent(text)
+            rent_man: float | None = parse_rent(text)
             walk_min = parse_walk(text)
 
             # 面積フィルタ（取得できた場合のみ）
