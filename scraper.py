@@ -7,6 +7,13 @@ import re
 import time
 from datetime import datetime
 
+try:
+    from curl_cffi import requests as cffi_requests
+    _CFFI_SESSION = cffi_requests.Session()
+    _CFFI_AVAILABLE = True
+except ImportError:
+    _CFFI_AVAILABLE = False
+
 # ── 検索条件 ──────────────────────────────────────────────────
 RENT_MAX_MAN  = 20    # 家賃上限20万円
 AREA_MIN_SQM  = 30    # 30㎡以上
@@ -22,7 +29,6 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
     "Accept-Language": "ja-JP,ja;q=0.9,en-US;q=0.8,en;q=0.7",
-    "Accept-Encoding": "gzip, deflate, br",
     "Connection": "keep-alive",
     "Upgrade-Insecure-Requests": "1",
     "Sec-Fetch-Dest": "document",
@@ -85,27 +91,40 @@ def save_seen(seen: dict):
     with open(SEEN_FILE, "w") as f:
         json.dump(cleaned, f)
 
-SESSION = requests.Session()
-SESSION.headers.update(HEADERS)
-
 def init_session():
-    """アットホームトップページでCookieを取得"""
-    try:
-        r = SESSION.get("https://www.athome.co.jp/", timeout=20)
-        print(f"  セッション初期化: {r.status_code}")
-        time.sleep(3)
-    except Exception as e:
-        print(f"  セッション初期化エラー: {e}")
+    """curl_cffiが使えない場合のフォールバック用（何もしない）"""
+    pass
 
 def fetch(url: str) -> str | None:
+    """curl_cffiでChrome TLSフィンガープリントを偽装してアットホームのbot検知を回避する。"""
+    if _CFFI_AVAILABLE:
+        try:
+            r = _CFFI_SESSION.get(
+                url,
+                headers=HEADERS,
+                timeout=30,
+                impersonate="chrome124",
+            )
+            if r.status_code == 404:
+                print(f"  404 スキップ: {url}")
+                return None
+            r.raise_for_status()
+            content = r.text
+            if "reeseSkipExpiration" in content or 'noindex,nofollow' in content:
+                print(f"  ブロック検出（スキップ）: {url}")
+                return None
+            return content
+        except Exception as e:
+            print(f"  fetch error (cffi): {e}")
+            return None
+    # フォールバック: 通常requests
     try:
-        r = SESSION.get(url, timeout=30)
+        r = requests.get(url, headers=HEADERS, timeout=30)
         if r.status_code == 404:
             print(f"  404 スキップ: {url}")
             return None
         r.raise_for_status()
-        content = r.content.decode("utf-8", errors="replace")
-        # CAPTCHAまたはブロックページの検出
+        content = r.text
         if len(content) < 30000 or 'noindex,nofollow' in content:
             print(f"  ブロック検出（スキップ）: {url}")
             return None
