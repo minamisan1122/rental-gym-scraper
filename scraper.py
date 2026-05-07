@@ -5,6 +5,7 @@ import json
 import os
 import re
 import time
+import random
 from datetime import datetime
 
 try:
@@ -24,18 +25,30 @@ CHATWORK_ROOM_ID   = os.environ.get("CHATWORK_ROOM_ID", "258471022")
 DATA_DIR           = os.environ.get("DATA_DIR", ".")
 SEEN_FILE          = os.path.join(DATA_DIR, "seen_properties.json")
 
-HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-    "Accept-Language": "ja-JP,ja;q=0.9,en-US;q=0.8,en;q=0.7",
-    "Connection": "keep-alive",
-    "Upgrade-Insecure-Requests": "1",
-    "Sec-Fetch-Dest": "document",
-    "Sec-Fetch-Mode": "navigate",
-    "Sec-Fetch-Site": "none",
-    "Sec-Fetch-User": "?1",
-    "Cache-Control": "max-age=0",
-}
+# Chromeバージョンをランダムローテーションしてフィンガープリントを分散させる
+CHROME_PROFILES = [
+    ("chrome110", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"),
+    ("chrome116", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36"),
+    ("chrome120", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"),
+    ("chrome124", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"),
+    ("chrome131", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"),
+]
+
+def get_headers(ua: str) -> dict:
+    return {
+        "User-Agent": ua,
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+        "Accept-Language": "ja-JP,ja;q=0.9,en-US;q=0.8,en;q=0.7",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1",
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "none",
+        "Sec-Fetch-User": "?1",
+        "Cache-Control": "max-age=0",
+    }
+
+HEADERS = get_headers(CHROME_PROFILES[3][1])
 
 # ── エリア定義 ─────────────────────────────────────────────────
 # (エリア名, ベースURL, 徒歩分数)
@@ -88,44 +101,56 @@ def init_session():
     """curl_cffiが使えない場合のフォールバック用（何もしない）"""
     pass
 
-def fetch(url: str, session=None) -> str | None:
+def _is_blocked(content: str) -> bool:
+    return "reeseSkipExpiration" in content or 'noindex,nofollow' in content
+
+def fetch(url: str, session=None, impersonate: str = "chrome124", ua: str = "") -> str | None:
     """curl_cffiでChrome TLSフィンガープリントを偽装してアットホームのbot検知を回避する。"""
+    headers = get_headers(ua) if ua else HEADERS
     if _CFFI_AVAILABLE:
         try:
             s = session or cffi_requests.Session()
-            r = s.get(
-                url,
-                headers=HEADERS,
-                timeout=30,
-                impersonate="chrome124",
-            )
+            r = s.get(url, headers=headers, timeout=30, impersonate=impersonate)
             if r.status_code == 404:
                 print(f"  404 スキップ: {url}")
                 return None
             r.raise_for_status()
-            content = r.text
-            if "reeseSkipExpiration" in content or 'noindex,nofollow' in content:
-                print(f"  ブロック検出（スキップ）: {url}")
-                return None
-            return content
+            if _is_blocked(r.text):
+                return "__BLOCKED__"
+            return r.text
         except Exception as e:
             print(f"  fetch error (cffi): {e}")
             return None
     # フォールバック: 通常requests
     try:
-        r = requests.get(url, headers=HEADERS, timeout=30)
+        r = requests.get(url, headers=headers, timeout=30)
         if r.status_code == 404:
             print(f"  404 スキップ: {url}")
             return None
         r.raise_for_status()
-        content = r.text
-        if len(content) < 30000 or 'noindex,nofollow' in content:
-            print(f"  ブロック検出（スキップ）: {url}")
-            return None
-        return content
+        if len(r.text) < 30000 or _is_blocked(r.text):
+            return "__BLOCKED__"
+        return r.text
     except Exception as e:
         print(f"  fetch error: {e}")
         return None
+
+
+def fetch_with_retry(url: str, impersonate: str, ua: str) -> str | None:
+    """ブロック検出時に別プロファイルで1回リトライする。"""
+    session = cffi_requests.Session() if _CFFI_AVAILABLE else None
+    result = fetch(url, session=session, impersonate=impersonate, ua=ua)
+    if result == "__BLOCKED__":
+        retry_profile, retry_ua = random.choice(CHROME_PROFILES)
+        wait = random.uniform(100, 140)
+        print(f"  ブロック検出 → {wait:.0f}秒待機後に {retry_profile} でリトライ: {url}")
+        time.sleep(wait)
+        retry_session = cffi_requests.Session() if _CFFI_AVAILABLE else None
+        result = fetch(url, session=retry_session, impersonate=retry_profile, ua=retry_ua)
+        if result == "__BLOCKED__":
+            print(f"  リトライもブロック → スキップ: {url}")
+            return None
+    return result
 
 def parse_rent(text: str) -> int | None:
     m = re.search(r"([\d.]+)\s*万円", text)
@@ -197,17 +222,14 @@ PROP_ID_RE = re.compile(r"/rent_store/(\d{8,12})/")
 
 def scrape_area(area_name: str, base_url: str, walk_limit: int,
                 today_str: str, seen: dict, is_first_run: bool,
-                rent_min: int | None = None) -> int:
-    notified  = 0
-    session   = cffi_requests.Session() if _CFFI_AVAILABLE else None
+                rent_min: int | None = None,
+                impersonate: str = "chrome124", ua: str = "") -> int:
+    notified = 0
 
     for page in range(1, 4):
-        if page == 1:
-            url = f"{base_url}/list/"
-        else:
-            url = f"{base_url}/list/?page={page}"
+        url = f"{base_url}/list/" if page == 1 else f"{base_url}/list/?page={page}"
 
-        html = fetch(url, session=session)
+        html = fetch_with_retry(url, impersonate=impersonate, ua=ua)
         if html is None:
             break
 
@@ -302,7 +324,7 @@ def scrape_area(area_name: str, base_url: str, walk_limit: int,
         if not found_new:
             break
 
-        time.sleep(5)
+        time.sleep(random.uniform(10, 20))
 
     return notified
 
@@ -323,10 +345,15 @@ def main():
         print("【初回実行】物件IDを登録するのみ（通知なし）")
 
     total = 0
-    for area_name, base_url, walk_limit, rent_min in SEARCH_AREAS:
-        print(f"\n== {area_name} ==")
-        total += scrape_area(area_name, base_url, walk_limit, today_str, seen, is_first_run, rent_min)
-        time.sleep(30)
+    for i, (area_name, base_url, walk_limit, rent_min) in enumerate(SEARCH_AREAS):
+        profile, ua = random.choice(CHROME_PROFILES)
+        print(f"\n== {area_name} [{profile}] ==")
+        total += scrape_area(area_name, base_url, walk_limit, today_str, seen, is_first_run,
+                             rent_min, impersonate=profile, ua=ua)
+        if i < len(SEARCH_AREAS) - 1:
+            wait = random.uniform(90, 150)
+            print(f"  → 次のエリアまで {wait:.0f}秒待機")
+            time.sleep(wait)
 
     print(f"\n通知合計: {total}件")
     save_seen(seen)
