@@ -9,7 +9,6 @@ from datetime import datetime
 
 try:
     from curl_cffi import requests as cffi_requests
-    _CFFI_SESSION = cffi_requests.Session()
     _CFFI_AVAILABLE = True
 except ImportError:
     _CFFI_AVAILABLE = False
@@ -90,11 +89,12 @@ def init_session():
     """curl_cffiが使えない場合のフォールバック用（何もしない）"""
     pass
 
-def fetch(url: str) -> str | None:
+def fetch(url: str, session=None) -> str | None:
     """curl_cffiでChrome TLSフィンガープリントを偽装してアットホームのbot検知を回避する。"""
     if _CFFI_AVAILABLE:
         try:
-            r = _CFFI_SESSION.get(
+            s = session or cffi_requests.Session()
+            r = s.get(
                 url,
                 headers=HEADERS,
                 timeout=30,
@@ -201,6 +201,7 @@ def scrape_area(area_name: str, base_url: str, walk_limit: int,
                 rent_min: int | None = None) -> int:
     walk_path = f"{walk_limit}-min"
     notified  = 0
+    session   = cffi_requests.Session() if _CFFI_AVAILABLE else None
 
     for page in range(1, 4):
         params = f"menseki_from={AREA_MIN_SQM}&menseki_to={AREA_MAX_SQM - 1}&chinryou_to={RENT_MAX_MAN}"
@@ -211,7 +212,7 @@ def scrape_area(area_name: str, base_url: str, walk_limit: int,
         else:
             url = f"{base_url}/{walk_path}/list/?{params}&page={page}"
 
-        html = fetch(url)
+        html = fetch(url, session=session)
         if html is None:
             break
 
@@ -325,7 +326,7 @@ def main():
     for area_name, base_url, walk_limit, rent_min in SEARCH_AREAS:
         print(f"\n== {area_name} ==")
         total += scrape_area(area_name, base_url, walk_limit, today_str, seen, is_first_run, rent_min)
-        time.sleep(8)
+        time.sleep(30)
 
     print(f"\n通知合計: {total}件")
     save_seen(seen)
