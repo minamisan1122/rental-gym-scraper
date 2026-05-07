@@ -284,8 +284,11 @@ def scrape_area(area_name: str, base_url: str, walk_limit: int,
                     print(f"    面積NG: {area_sqm}㎡")
                     continue
 
-            # 徒歩分数フィルタ（取得できた場合のみ）
-            if walk_min is not None and walk_min > walk_limit:
+            # 徒歩分数フィルタ（不明な場合もスキップ）
+            if walk_min is None:
+                print(f"    徒歩NG: 徒歩分数不明のためスキップ")
+                continue
+            if walk_min > walk_limit:
                 print(f"    徒歩NG: {walk_min}分（上限{walk_limit}分）")
                 continue
 
