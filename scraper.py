@@ -262,6 +262,11 @@ def scrape_area(area_name: str, base_url: str, walk_limit: int,
                     print(f"    面積NG: {area_sqm}㎡")
                     continue
 
+            # 徒歩分数フィルタ（取得できた場合のみ）
+            if walk_min is not None and walk_min > walk_limit:
+                print(f"    徒歩NG: {walk_min}分（上限{walk_limit}分）")
+                continue
+
             # 家賃フィルタ（取得できた場合のみ）
             if rent_man is not None and rent_man > RENT_MAX_MAN:
                 print(f"    家賃NG（上限超過）: {rent_man}万円")
