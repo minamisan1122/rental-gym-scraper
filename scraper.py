@@ -41,30 +41,30 @@ HEADERS = {
 # (エリア名, ベースURL, 徒歩分数)
 SEARCH_AREAS = [
     # 1. 埼玉エリア（各駅徒歩10分）
-    ("ふじみ野駅", "https://www.athome.co.jp/chintai/saitama/fujimino-st",         10, None),
-    ("和光市駅",   "https://www.athome.co.jp/chintai/saitama/wako-st",             10, None),
-    ("上尾駅",     "https://www.athome.co.jp/chintai/saitama/ageo-st",             10, None),
-    ("熊谷駅",     "https://www.athome.co.jp/chintai/saitama/kumagaya-st",         10, None),
-    ("春日部駅",   "https://www.athome.co.jp/chintai/saitama/kasukabe-st",         10, None),
-    ("川越駅",     "https://www.athome.co.jp/chintai/saitama/kawagoe-st",          10, None),
-    ("浦和駅",     "https://www.athome.co.jp/chintai/saitama/urawa-st",            10, None),
-    ("所沢駅",     "https://www.athome.co.jp/chintai/saitama/tokorozawa-st",       10, None),
-    ("南越谷駅",   "https://www.athome.co.jp/chintai/saitama/minamikoshigaya-st",  10, None),
-    ("志木駅",     "https://www.athome.co.jp/chintai/saitama/shiki-st",            10, None),
+    ("ふじみ野駅", "https://www.athome.co.jp/rent_store/saitama/fujimino-st",         10, None),
+    ("和光市駅",   "https://www.athome.co.jp/rent_store/saitama/wako-st",             10, None),
+    ("上尾駅",     "https://www.athome.co.jp/rent_store/saitama/ageo-st",             10, None),
+    ("熊谷駅",     "https://www.athome.co.jp/rent_store/saitama/kumagaya-st",         10, None),
+    ("春日部駅",   "https://www.athome.co.jp/rent_store/saitama/kasukabe-st",         10, None),
+    ("川越駅",     "https://www.athome.co.jp/rent_store/saitama/kawagoe-st",          10, None),
+    ("浦和駅",     "https://www.athome.co.jp/rent_store/saitama/urawa-st",            10, None),
+    ("所沢駅",     "https://www.athome.co.jp/rent_store/saitama/tokorozawa-st",       10, None),
+    ("南越谷駅",   "https://www.athome.co.jp/rent_store/saitama/minamikoshigaya-st",  10, None),
+    ("志木駅",     "https://www.athome.co.jp/rent_store/saitama/shiki-st",            10, None),
 
     # 3. 八王子エリア（徒歩10分）
-    ("八王子駅",   "https://www.athome.co.jp/chintai/tokyo/hachioji-st",           10, None),
+    ("八王子駅",   "https://www.athome.co.jp/rent_store/tokyo/hachioji-st",           10, None),
 
     # 4. 東京東部エリア（徒歩7分）
-    ("錦糸町駅",   "https://www.athome.co.jp/chintai/tokyo/kinshicho-st",           7, None),
-    ("小岩駅",     "https://www.athome.co.jp/chintai/tokyo/koiwa-st",               7, None),
-    ("新小岩駅",   "https://www.athome.co.jp/chintai/tokyo/shinkoiwa-st",           7, None),
+    ("錦糸町駅",   "https://www.athome.co.jp/rent_store/tokyo/kinshicho-st",           7, None),
+    ("小岩駅",     "https://www.athome.co.jp/rent_store/tokyo/koiwa-st",               7, None),
+    ("新小岩駅",   "https://www.athome.co.jp/rent_store/tokyo/shinkoiwa-st",           7, None),
 
     # 5. 北関東エリア（徒歩15分）
-    ("高崎駅",     "https://www.athome.co.jp/chintai/gunma/takasaki-st",           15, None),
-    ("水戸駅",     "https://www.athome.co.jp/chintai/ibaraki/mito-st",             15, None),
-    ("研究学園駅", "https://www.athome.co.jp/chintai/ibaraki/kenkyugakuen-st",     15, None),
-    ("宇都宮駅",   "https://www.athome.co.jp/chintai/tochigi/utsunomiya-st",       15, None),
+    ("高崎駅",     "https://www.athome.co.jp/rent_store/gunma/takasaki-st",           15, None),
+    ("水戸駅",     "https://www.athome.co.jp/rent_store/ibaraki/mito-st",             15, None),
+    ("研究学園駅", "https://www.athome.co.jp/rent_store/ibaraki/kenkyugakuen-st",     15, None),
+    ("宇都宮駅",   "https://www.athome.co.jp/rent_store/tochigi/utsunomiya-st",       15, None),
 ]
 
 
@@ -194,23 +194,22 @@ def format_message(area_name: str, prop: dict) -> str:
 #  スクレイピング
 # ══════════════════════════════════════════════════════════════
 
-PROP_ID_RE = re.compile(r"/chintai/(\d{8,12})/")
+PROP_ID_RE = re.compile(r"/rent_store/(\d{8,12})/")
 
 def scrape_area(area_name: str, base_url: str, walk_limit: int,
                 today_str: str, seen: dict, is_first_run: bool,
                 rent_min: int | None = None) -> int:
-    walk_path = f"{walk_limit}-min"
     notified  = 0
     session   = cffi_requests.Session() if _CFFI_AVAILABLE else None
 
     for page in range(1, 4):
-        params = f"menseki_from={AREA_MIN_SQM}&menseki_to={AREA_MAX_SQM - 1}&chinryou_to={RENT_MAX_MAN}"
+        params = f"menseki_from={AREA_MIN_SQM}&menseki_to={AREA_MAX_SQM - 1}&chinryou_to={RENT_MAX_MAN}&toho_to={walk_limit}"
         if rent_min is not None:
             params += f"&chinryou_from={rent_min}"
         if page == 1:
-            url = f"{base_url}/{walk_path}/list/?{params}"
+            url = f"{base_url}/list/?{params}"
         else:
-            url = f"{base_url}/{walk_path}/list/?{params}&page={page}"
+            url = f"{base_url}/list/?{params}&page={page}"
 
         html = fetch(url, session=session)
         if html is None:
@@ -233,7 +232,7 @@ def scrape_area(area_name: str, base_url: str, walk_limit: int,
             if not m:
                 continue
             prop_id = m.group(1)
-            key = f"athome_{prop_id}"
+            key = f"athome_rs_{prop_id}"
 
             if key in seen:
                 continue
@@ -284,7 +283,7 @@ def scrape_area(area_name: str, base_url: str, walk_limit: int,
                     break
 
             # 詳細URLは /chintai/XXXXXXXXXX/ の形式
-            detail_url = f"https://www.athome.co.jp/chintai/{prop_id}/"
+            detail_url = f"https://www.athome.co.jp/rent_store/{prop_id}/"
 
             prop = {
                 "url":      detail_url,
