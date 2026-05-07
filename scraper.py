@@ -169,6 +169,11 @@ def fetch_with_retry(url: str, impersonate: str, ua: str) -> str | None:
     return result
 
 def parse_rent(text: str) -> float | None:
+    # 「賃料」「月額」「家賃」ラベルの直後の金額を優先（敷金・礼金・坪単価を誤取得しない）
+    m = re.search(r"(?:賃料|月額|家賃)[^\d]*([\d.]+)\s*万円", text)
+    if m:
+        return float(m.group(1))
+    # ラベルなしの場合はフォールバック
     m = re.search(r"([\d.]+)\s*万円", text)
     if m:
         return float(m.group(1))
