@@ -25,6 +25,7 @@ CHATWORK_ROOM_ID   = os.environ.get("CHATWORK_ROOM_ID", "258471022")
 DATA_DIR           = os.environ.get("DATA_DIR", ".")
 SEEN_FILE          = os.path.join(DATA_DIR, "seen_properties.json")
 BATCH_FILE         = os.path.join(DATA_DIR, "current_batch.json")
+SCRAPERAPI_KEY     = os.environ.get("SCRAPERAPI_KEY")
 
 # Chromeバージョンをランダムローテーションしてフィンガープリントを分散させる
 CHROME_PROFILES = [
@@ -157,6 +158,23 @@ def fetch(url: str, session=None, impersonate: str = "chrome124", ua: str = "") 
         return None
 
 
+def fetch_scraperapi(url: str) -> str | None:
+    """ScraperAPI経由でフェッチ（PerimeterX/Reese84 bot検知回避）"""
+    if not SCRAPERAPI_KEY:
+        print("  ⚠ SCRAPERAPI_KEY が未設定")
+        return None
+    try:
+        r = requests.get(
+            "http://api.scraperapi.com",
+            params={"api_key": SCRAPERAPI_KEY, "url": url, "premium": "true"},
+            timeout=60,
+        )
+        r.raise_for_status()
+        return r.text
+    except Exception as e:
+        print(f"  ScraperAPI error: {e}")
+        return None
+
 def fetch_with_retry(url: str, impersonate: str, ua: str) -> str | None:
     """ブロック検出時に別プロファイルで1回リトライする。"""
     session = cffi_requests.Session() if _CFFI_AVAILABLE else None
@@ -208,7 +226,8 @@ def split_message(msg: str) -> list[str]:
         msg = msg[CHATWORK_LIMIT:]
     return parts
 
-def send_chatwork(msg: str):
+def send_chatwork(msg: str) -> bool:
+    success = True
     for part in split_message(msg):
         try:
             r = requests.post(
@@ -219,8 +238,11 @@ def send_chatwork(msg: str):
             )
             if r.status_code != 200:
                 print(f"  Chatwork error: {r.status_code} {r.text}")
+                success = False
         except Exception as e:
             print(f"  Chatwork error: {e}")
+            success = False
+    return success
 
 def format_message(area_name: str, prop: dict) -> str:
     if prop.get("rent_man") is not None:
@@ -252,14 +274,13 @@ PROP_ID_RE = re.compile(r"/rent_store/(\d{8,12})/")
 
 def scrape_area(area_name: str, base_url: str, walk_limit: int,
                 today_str: str, seen: dict, is_first_run: bool,
-                rent_min: int | None = None,
-                impersonate: str = "chrome124", ua: str = "") -> int:
+                rent_min: int | None = None) -> int:
     notified = 0
 
     for page in range(1, 4):
         url = f"{base_url}/list/" if page == 1 else f"{base_url}/list/?page={page}"
 
-        html = fetch_with_retry(url, impersonate=impersonate, ua=ua)
+        html = fetch_scraperapi(url)
         if html is None:
             break
 
@@ -286,9 +307,9 @@ def scrape_area(area_name: str, base_url: str, walk_limit: int,
                 continue
 
             found_new = True
-            seen[key] = today_str
 
             if is_first_run:
+                seen[key] = today_str
                 continue
 
             # カード情報取得
@@ -321,22 +342,27 @@ def scrape_area(area_name: str, base_url: str, walk_limit: int,
             # 面積フィルタ（取得できた場合のみ）
             if area_sqm is not None:
                 if area_sqm < AREA_MIN_SQM or area_sqm >= AREA_MAX_SQM:
+                    seen[key] = today_str
                     print(f"    面積NG: {area_sqm}㎡")
                     continue
 
             # 徒歩分数フィルタ（不明な場合もスキップ）
             if walk_min is None:
+                seen[key] = today_str
                 print(f"    徒歩NG: 徒歩分数不明のためスキップ")
                 continue
             if walk_min > walk_limit:
+                seen[key] = today_str
                 print(f"    徒歩NG: {walk_min}分（上限{walk_limit}分）")
                 continue
 
             # 家賃フィルタ（取得できた場合のみ）
             if rent_man is not None and rent_man > RENT_MAX_MAN:
+                seen[key] = today_str
                 print(f"    家賃NG（上限超過）: {rent_man}万円")
                 continue
             if rent_min is not None and rent_man is not None and rent_man < rent_min:
+                seen[key] = today_str
                 print(f"    家賃NG（下限未満）: {rent_man}万円")
                 continue
 
@@ -348,7 +374,6 @@ def scrape_area(area_name: str, base_url: str, walk_limit: int,
                     name = t
                     break
 
-            # 詳細URLは /chintai/XXXXXXXXXX/ の形式
             detail_url = f"https://www.athome.co.jp/rent_store/{prop_id}/"
 
             prop = {
@@ -359,9 +384,12 @@ def scrape_area(area_name: str, base_url: str, walk_limit: int,
                 "walk_min": walk_min,
             }
 
-            send_chatwork(format_message(area_name, prop))
-            print(f"  ✅ {area_name} {name[:30]} → 通知送信")
-            notified += 1
+            if send_chatwork(format_message(area_name, prop)):
+                seen[key] = today_str  # 送信成功後にのみseen登録
+                print(f"  ✅ {area_name} {name[:30]} → 通知送信")
+                notified += 1
+            else:
+                print(f"  ⚠ 通知失敗（次回再試行）: {area_name} {name[:30]}")
             time.sleep(1)
 
         if not found_new:
@@ -394,15 +422,10 @@ def main():
         print("【初回実行】物件IDを登録するのみ（通知なし）")
 
     total = 0
-    for i, (area_name, base_url, walk_limit, rent_min) in enumerate(areas):
-        profile, ua = random.choice(CHROME_PROFILES)
-        print(f"\n== {area_name} [{profile}] ==")
+    for area_name, base_url, walk_limit, rent_min in areas:
+        print(f"\n== {area_name} ==")
         total += scrape_area(area_name, base_url, walk_limit, today_str, seen, is_first_run,
-                             rent_min, impersonate=profile, ua=ua)
-        if i < len(areas) - 1:
-            wait = random.uniform(90, 150)
-            print(f"  → 次のエリアまで {wait:.0f}秒待機")
-            time.sleep(wait)
+                             rent_min)
 
     print(f"\n通知合計: {total}件")
     save_seen(seen)
