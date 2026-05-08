@@ -303,9 +303,19 @@ def scrape_area(area_name: str, base_url: str, walk_limit: int,
                         card = parent
                         break
 
+            # 家賃: athomeは整数部と小数部を別spanに分割するため separator='' で結合取得
+            rent_man: float | None = None
+            price_span = card.find("span", class_="red")
+            if price_span:
+                price_text = price_span.get_text(strip=True)
+                m = re.search(r"([\d.]+)\s*万円", price_text)
+                if m:
+                    rent_man = float(m.group(1))
+
             text = card.get_text(separator=" ", strip=True)
             area_sqm = parse_area(text)
-            rent_man: float | None = parse_rent(text)
+            if rent_man is None:
+                rent_man = parse_rent(text)
             walk_min = parse_walk(text)
 
             # 面積フィルタ（取得できた場合のみ）
