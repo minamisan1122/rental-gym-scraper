@@ -52,8 +52,8 @@ def get_headers(ua: str) -> dict:
 HEADERS = get_headers(CHROME_PROFILES[3][1])
 
 # ── エリア定義（バッチ分割） ────────────────────────────────────
-# 1回のセッションで6エリアを超えるとReese84にブロックされるため3グループに分割。
-# 3時間おきに1グループずつ処理し、全17エリアを9時間で1巡する。
+# 1回のセッションで6エリアを超えるとReese84にブロックされるため4グループに分割。
+# 3時間おきに1グループずつ処理し、全19エリアを12時間で1巡する。
 # (エリア名, ベースURL, 徒歩分数上限, 家賃下限)
 BATCHES = [
     # バッチ0: 埼玉北部・中部（6エリア）
@@ -81,6 +81,11 @@ BATCHES = [
         ("水戸駅",     "https://www.athome.co.jp/rent_store/ibaraki/mito-st",            15, None),
         ("研究学園駅", "https://www.athome.co.jp/rent_store/ibaraki/kenkyugakuen-st",    15, None),
         ("宇都宮駅",   "https://www.athome.co.jp/rent_store/tochigi/utsunomiya-st",      15, None),
+    ],
+    # バッチ3: 東京西部（2エリア）
+    [
+        ("調布駅",     "https://www.athome.co.jp/rent_store/tokyo/chofu-st",             10, None),
+        ("府中駅",     "https://www.athome.co.jp/rent_store/tokyo/fuchu-st",             10, None),
     ],
 ]
 NUM_BATCHES = len(BATCHES)
