@@ -60,7 +60,7 @@ BATCHES = [
     # バッチ0: 埼玉北部・中部（6エリア）
     [
         ("ふじみ野駅", "https://www.athome.co.jp/rent_store/saitama/fujimino-st",        10, None),
-        ("和光市駅",   "https://www.athome.co.jp/rent_store/saitama/wako-st",            10, None),
+        ("和光市駅",   "https://www.athome.co.jp/rent_store/saitama/wakoshi-st",          10, None),
         ("熊谷駅",     "https://www.athome.co.jp/rent_store/saitama/kumagaya-st",        10, None),
         ("春日部駅",   "https://www.athome.co.jp/rent_store/saitama/kasukabe-st",        10, None),
         ("川越駅",     "https://www.athome.co.jp/rent_store/saitama/kawagoe-st",         10, None),
