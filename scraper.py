@@ -339,6 +339,12 @@ def scrape_area(area_name: str, base_url: str, walk_limit: int,
                 rent_man = parse_rent(text)
             walk_min = parse_walk(text)
 
+            # スケルトン物件スキップ
+            if "スケルトン" in text:
+                seen[key] = today_str
+                print(f"    スケルトンNG: スキップ")
+                continue
+
             # 面積フィルタ（取得できた場合のみ）
             if area_sqm is not None:
                 if area_sqm < AREA_MIN_SQM or area_sqm >= AREA_MAX_SQM:
