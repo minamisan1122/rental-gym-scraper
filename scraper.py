@@ -64,12 +64,12 @@ BATCHES = [
         ("調布駅",     "https://www.athome.co.jp/rent_store/tokyo/chofu-st",             10, None),
         ("府中駅",     "https://www.athome.co.jp/rent_store/tokyo/fuchu-st",             10, None),
     ],
-    # バッチ1: 北関東（4エリア）
+    # バッチ1: 北関東・北海道（4エリア）
     [
-        ("高崎駅",     "https://www.athome.co.jp/rent_store/gunma/takasaki-st",          15, None),
         ("水戸駅",     "https://www.athome.co.jp/rent_store/ibaraki/mito-st",            15, None),
         ("研究学園駅", "https://www.athome.co.jp/rent_store/ibaraki/kenkyugakuen-st",    15, None),
         ("宇都宮駅",   "https://www.athome.co.jp/rent_store/tochigi/utsunomiya-st",      15, None),
+        ("豊平駅",     "https://www.athome.co.jp/rent_store/hokkaido/toyohira-st",       10, None),
     ],
 ]
 NUM_BATCHES = len(BATCHES)
