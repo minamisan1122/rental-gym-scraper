@@ -53,40 +53,23 @@ def get_headers(ua: str) -> dict:
 HEADERS = get_headers(CHROME_PROFILES[3][1])
 
 # ── エリア定義（バッチ分割） ────────────────────────────────────
-# 1回のセッションで6エリアを超えるとReese84にブロックされるため4グループに分割。
-# 3時間おきに1グループずつ処理し、全19エリアを12時間で1巡する。
+# ScraperAPI移行後、bot検知リスクは低減。9エリアを2バッチで3時間おきに処理。
 # (エリア名, ベースURL, 徒歩分数上限, 家賃下限)
 BATCHES = [
-    # バッチ0: 埼玉北部・中部（6エリア）
+    # バッチ0: 東京東部（5エリア）
     [
-        ("ふじみ野駅", "https://www.athome.co.jp/rent_store/saitama/fujimino-st",        10, None),
-        ("和光市駅",   "https://www.athome.co.jp/rent_store/saitama/wakoshi-st",          10, None),
-        ("熊谷駅",     "https://www.athome.co.jp/rent_store/saitama/kumagaya-st",        10, None),
-        ("春日部駅",   "https://www.athome.co.jp/rent_store/saitama/kasukabe-st",        10, None),
-        ("川越駅",     "https://www.athome.co.jp/rent_store/saitama/kawagoe-st",         10, None),
-        ("浦和駅",     "https://www.athome.co.jp/rent_store/saitama/urawa-st",           10, None),
-    ],
-    # バッチ1: 埼玉南部・八王子・東京東部（6エリア）
-    [
-        ("所沢駅",     "https://www.athome.co.jp/rent_store/saitama/tokorozawa-st",      10, None),
-        ("南越谷駅",   "https://www.athome.co.jp/rent_store/saitama/minamikoshigaya-st", 10, None),
-        ("志木駅",     "https://www.athome.co.jp/rent_store/saitama/shiki-st",           10, None),
-        ("八王子駅",   "https://www.athome.co.jp/rent_store/tokyo/hachioji-st",          10, None),
         ("錦糸町駅",   "https://www.athome.co.jp/rent_store/tokyo/kinshicho-st",          7, None),
         ("小岩駅",     "https://www.athome.co.jp/rent_store/tokyo/koiwa-st",              7, None),
-    ],
-    # バッチ2: 東京東部・北関東（5エリア）
-    [
         ("新小岩駅",   "https://www.athome.co.jp/rent_store/tokyo/shinkoiwa-st",          7, None),
+        ("調布駅",     "https://www.athome.co.jp/rent_store/tokyo/chofu-st",             10, None),
+        ("府中駅",     "https://www.athome.co.jp/rent_store/tokyo/fuchu-st",             10, None),
+    ],
+    # バッチ1: 北関東（4エリア）
+    [
         ("高崎駅",     "https://www.athome.co.jp/rent_store/gunma/takasaki-st",          15, None),
         ("水戸駅",     "https://www.athome.co.jp/rent_store/ibaraki/mito-st",            15, None),
         ("研究学園駅", "https://www.athome.co.jp/rent_store/ibaraki/kenkyugakuen-st",    15, None),
         ("宇都宮駅",   "https://www.athome.co.jp/rent_store/tochigi/utsunomiya-st",      15, None),
-    ],
-    # バッチ3: 東京西部（2エリア）
-    [
-        ("調布駅",     "https://www.athome.co.jp/rent_store/tokyo/chofu-st",             10, None),
-        ("府中駅",     "https://www.athome.co.jp/rent_store/tokyo/fuchu-st",             10, None),
     ],
 ]
 NUM_BATCHES = len(BATCHES)
