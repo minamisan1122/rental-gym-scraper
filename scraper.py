@@ -69,7 +69,7 @@ BATCHES = [
         ("水戸駅",     "https://www.athome.co.jp/rent_store/ibaraki/mito-st",            15, None),
         ("研究学園駅", "https://www.athome.co.jp/rent_store/ibaraki/kenkyugakuen-st",    15, None),
         ("宇都宮駅",   "https://www.athome.co.jp/rent_store/tochigi/utsunomiya-st",      15, None),
-        ("豊平駅",     "https://www.athome.co.jp/rent_store/hokkaido/toyohira-st",       10, None),
+        ("豊平区",     "https://www.athome.co.jp/rent_office/hokkaido/sapporo_toyohira-city", 10, None),
     ],
 ]
 NUM_BATCHES = len(BATCHES)
@@ -253,7 +253,7 @@ def format_message(area_name: str, prop: dict) -> str:
 #  スクレイピング
 # ══════════════════════════════════════════════════════════════
 
-PROP_ID_RE = re.compile(r"/rent_store/(\d{8,12})/")
+PROP_ID_RE = re.compile(r"/(rent_(?:store|office))/(\d{8,12})/")
 
 def scrape_area(area_name: str, base_url: str, walk_limit: int,
                 today_str: str, seen: dict, is_first_run: bool,
@@ -283,7 +283,8 @@ def scrape_area(area_name: str, base_url: str, walk_limit: int,
             m = PROP_ID_RE.search(href)
             if not m:
                 continue
-            prop_id = m.group(1)
+            prop_type = m.group(1)
+            prop_id = m.group(2)
             key = f"athome_rs_{prop_id}"
 
             if key in seen:
@@ -363,7 +364,7 @@ def scrape_area(area_name: str, base_url: str, walk_limit: int,
                     name = t
                     break
 
-            detail_url = f"https://www.athome.co.jp/rent_store/{prop_id}/"
+            detail_url = f"https://www.athome.co.jp/{prop_type}/{prop_id}/"
 
             prop = {
                 "url":      detail_url,
