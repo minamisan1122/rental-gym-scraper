@@ -58,9 +58,9 @@ HEADERS = get_headers(CHROME_PROFILES[3][1])
 BATCHES = [
     # バッチ0: 東京東部（5エリア）
     [
-        ("錦糸町駅",   "https://www.athome.co.jp/rent_store/tokyo/kinshicho-st",          7, None),
-        ("小岩駅",     "https://www.athome.co.jp/rent_store/tokyo/koiwa-st",              7, None),
-        ("新小岩駅",   "https://www.athome.co.jp/rent_store/tokyo/shinkoiwa-st",          7, None),
+        ("錦糸町駅",   "https://www.athome.co.jp/rent_store/tokyo/kinshicho-st",         10, None),
+        ("小岩駅",     "https://www.athome.co.jp/rent_store/tokyo/koiwa-st",             10, None),
+        ("新小岩駅",   "https://www.athome.co.jp/rent_store/tokyo/shinkoiwa-st",         10, None),
         ("調布駅",     "https://www.athome.co.jp/rent_store/tokyo/chofu-st",             10, None),
         ("府中駅",     "https://www.athome.co.jp/rent_store/tokyo/fuchu-st",             10, None),
     ],
