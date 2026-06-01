@@ -107,7 +107,7 @@ def init_session():
     pass
 
 def _is_blocked(content: str) -> bool:
-    return "reeseSkipExpiration" in content or 'noindex,nofollow' in content
+    return "reeseSkipExpiration" in content or "認証中" in content
 
 def fetch(url: str, session=None, impersonate: str = "chrome124", ua: str = "") -> str | None:
     """curl_cffiでChrome TLSフィンガープリントを偽装してアットホームのbot検知を回避する。"""
@@ -141,22 +141,25 @@ def fetch(url: str, session=None, impersonate: str = "chrome124", ua: str = "") 
         return None
 
 
-def fetch_scraperapi(url: str) -> str | None:
+def fetch_scraperapi(url: str, retries: int = 3, wait: int = 15) -> str | None:
     """ScraperAPI経由でフェッチ（PerimeterX/Reese84 bot検知回避）"""
     if not SCRAPERAPI_KEY:
         print("  ⚠ SCRAPERAPI_KEY が未設定")
         return None
-    try:
-        r = requests.get(
-            "http://api.scraperapi.com",
-            params={"api_key": SCRAPERAPI_KEY, "url": url, "premium": "true"},
-            timeout=60,
-        )
-        r.raise_for_status()
-        return r.text
-    except Exception as e:
-        print(f"  ScraperAPI error: {e}")
-        return None
+    for attempt in range(1, retries + 1):
+        try:
+            r = requests.get(
+                "http://api.scraperapi.com",
+                params={"api_key": SCRAPERAPI_KEY, "url": url, "premium": "true"},
+                timeout=60,
+            )
+            r.raise_for_status()
+            return r.text
+        except Exception as e:
+            print(f"  ScraperAPI error (試行{attempt}/{retries}): {e}")
+            if attempt < retries:
+                time.sleep(wait)
+    return None
 
 def fetch_with_retry(url: str, impersonate: str, ua: str) -> str | None:
     """ブロック検出時に別プロファイルで1回リトライする。"""
