@@ -70,6 +70,7 @@ BATCHES = [
         ("研究学園駅", "https://www.athome.co.jp/rent_store/ibaraki/kenkyugakuen-st",    15, None),
         ("宇都宮駅",   "https://www.athome.co.jp/rent_store/tochigi/utsunomiya-st",      15, None),
         ("豊平区",     "https://www.athome.co.jp/rent_office/hokkaido/sapporo_toyohira-city", 10, None),
+        ("豊中駅",     "https://www.athome.co.jp/rent_store/osaka/toyonaka-st",              10, None),
     ],
 ]
 NUM_BATCHES = len(BATCHES)
