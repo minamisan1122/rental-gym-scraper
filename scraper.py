@@ -267,7 +267,8 @@ def scrape_area(area_name: str, base_url: str, walk_limit: int,
     notified = 0
 
     for page in range(1, 4):
-        url = f"{base_url}/list/" if page == 1 else f"{base_url}/list/?page={page}"
+        page_path = "" if page == 1 else f"page{page}/"
+        url = f"{base_url}/list/{page_path}"
 
         html = fetch_scraperapi(url)
         if html is None:
