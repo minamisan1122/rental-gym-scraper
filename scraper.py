@@ -56,7 +56,7 @@ HEADERS = get_headers(CHROME_PROFILES[3][1])
 # ScraperAPI移行後、bot検知リスクは低減。9エリアを2バッチで3時間おきに処理。
 # (エリア名, ベースURL, 徒歩分数上限, 家賃下限)
 BATCHES = [
-    # バッチ0: 東京東部・神奈川（7エリア）
+    # バッチ0: 東京東部・神奈川・埼玉（8エリア）
     [
         ("錦糸町駅",   "https://www.athome.co.jp/rent_store/tokyo/kinshicho-st",         10, None),
         ("小岩駅",     "https://www.athome.co.jp/rent_store/tokyo/koiwa-st",             10, None),
@@ -65,6 +65,7 @@ BATCHES = [
         ("府中駅",     "https://www.athome.co.jp/rent_store/tokyo/fuchu-st",             10, None),
         ("中央林間駅", "https://www.athome.co.jp/rent_store/kanagawa/chuorinkan-st",     10, None),
         ("新横浜駅",   "https://www.athome.co.jp/rent_store/kanagawa/shinyokohama-st",   10, None),
+        ("大宮駅",     "https://www.athome.co.jp/rent_store/saitama/omiya-st",           10, None),
     ],
     # バッチ1: 北関東・北海道（4エリア）
     [
