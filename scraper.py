@@ -67,7 +67,7 @@ BATCHES = [
         ("新横浜駅",   "https://www.athome.co.jp/rent_store/kanagawa/shinyokohama-st",   10, None),
         ("大宮駅",     "https://www.athome.co.jp/rent_store/saitama/omiya-st",           10, None),
     ],
-    # バッチ1: 北関東・北海道（4エリア）
+    # バッチ1: 北関東・北海道・関西（8エリア）
     [
         ("水戸駅",     "https://www.athome.co.jp/rent_store/ibaraki/mito-st",            15, None),
         ("研究学園駅", "https://www.athome.co.jp/rent_store/ibaraki/kenkyugakuen-st",    15, None),
@@ -75,6 +75,8 @@ BATCHES = [
         ("豊平区",       "https://www.athome.co.jp/rent_office/hokkaido/sapporo_toyohira-city", 10, None),
         ("豊平公園駅",   "https://www.athome.co.jp/rent_store/hokkaido/toyohirakoen-st",        15, None),
         ("豊中駅",       "https://www.athome.co.jp/rent_store/osaka/toyonaka-st",               10, None),
+        ("JR奈良駅",     "https://www.athome.co.jp/rent_store/nara/nara-st",                    15, None),
+        ("近鉄奈良駅",   "https://www.athome.co.jp/rent_store/nara/kintetsunara-st",            15, None),
     ],
 ]
 NUM_BATCHES = len(BATCHES)
