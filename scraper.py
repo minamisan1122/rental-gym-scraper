@@ -53,22 +53,27 @@ def get_headers(ua: str) -> dict:
 HEADERS = get_headers(CHROME_PROFILES[3][1])
 
 # ── エリア定義（バッチ分割） ────────────────────────────────────
-# ScraperAPI移行後、bot検知リスクは低減。9エリアを2バッチで3時間おきに処理。
+# ScraperAPI移行後、bot検知リスクは低減。22エリアを2バッチで3時間おきに処理。
 # (エリア名, ベースURL, 徒歩分数上限, 家賃下限)
 BATCHES = [
-    # バッチ0: 東京東部・神奈川・埼玉（8エリア）
+    # バッチ0: 東京・神奈川・愛知（11エリア・全て徒歩10分）
     [
         ("錦糸町駅",   "https://www.athome.co.jp/rent_store/tokyo/kinshicho-st",         10, None),
         ("小岩駅",     "https://www.athome.co.jp/rent_store/tokyo/koiwa-st",             10, None),
         ("新小岩駅",   "https://www.athome.co.jp/rent_store/tokyo/shinkoiwa-st",         10, None),
+        ("蒲田駅",     "https://www.athome.co.jp/rent_store/tokyo/kamata-st",            10, None),
+        ("練馬駅",     "https://www.athome.co.jp/rent_store/tokyo/nerima-st",            10, None),
+        ("赤羽駅",     "https://www.athome.co.jp/rent_store/tokyo/akabane-st",           10, None),
         ("調布駅",     "https://www.athome.co.jp/rent_store/tokyo/chofu-st",             10, None),
         ("府中駅",     "https://www.athome.co.jp/rent_store/tokyo/fuchu-st",             10, None),
         ("中央林間駅", "https://www.athome.co.jp/rent_store/kanagawa/chuorinkan-st",     10, None),
         ("新横浜駅",   "https://www.athome.co.jp/rent_store/kanagawa/shinyokohama-st",   10, None),
-        ("大宮駅",     "https://www.athome.co.jp/rent_store/saitama/omiya-st",           10, None),
+        ("金山駅",     "https://www.athome.co.jp/rent_store/aichi/kanayama-st",          10, None),
     ],
-    # バッチ1: 北関東・北海道・関西（8エリア）
+    # バッチ1: 神奈川・埼玉・北関東・北海道・関西・愛知（11エリア）
     [
+        ("大宮駅",     "https://www.athome.co.jp/rent_store/saitama/omiya-st",           10, None),
+        ("上大岡駅",   "https://www.athome.co.jp/rent_store/kanagawa/kamiooka-st",       10, None),
         ("水戸駅",     "https://www.athome.co.jp/rent_store/ibaraki/mito-st",            15, None),
         ("研究学園駅", "https://www.athome.co.jp/rent_store/ibaraki/kenkyugakuen-st",    15, None),
         ("宇都宮駅",   "https://www.athome.co.jp/rent_store/tochigi/utsunomiya-st",      15, None),
@@ -77,6 +82,7 @@ BATCHES = [
         ("豊中駅",       "https://www.athome.co.jp/rent_store/osaka/toyonaka-st",               10, None),
         ("JR奈良駅",     "https://www.athome.co.jp/rent_store/nara/nara-st",                    15, None),
         ("近鉄奈良駅",   "https://www.athome.co.jp/rent_store/nara/kintetsunara-st",            15, None),
+        ("春日井駅",     "https://www.athome.co.jp/rent_store/aichi/kasugai-st",                10, None),
     ],
 ]
 NUM_BATCHES = len(BATCHES)
