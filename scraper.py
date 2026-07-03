@@ -53,7 +53,7 @@ def get_headers(ua: str) -> dict:
 HEADERS = get_headers(CHROME_PROFILES[3][1])
 
 # ── エリア定義（バッチ分割） ────────────────────────────────────
-# ScraperAPI移行後、bot検知リスクは低減。22エリアを2バッチで3時間おきに処理。
+# ScraperAPI移行後、bot検知リスクは低減。23エリアを2バッチで3時間おきに処理。
 # (エリア名, ベースURL, 徒歩分数上限, 家賃下限)
 BATCHES = [
     # バッチ0: 東京・神奈川・愛知（11エリア・全て徒歩10分）
@@ -70,9 +70,10 @@ BATCHES = [
         ("新横浜駅",   "https://www.athome.co.jp/rent_store/kanagawa/shinyokohama-st",   10, None),
         ("金山駅",     "https://www.athome.co.jp/rent_store/aichi/kanayama-st",          10, None),
     ],
-    # バッチ1: 神奈川・埼玉・北関東・北海道・関西・愛知（11エリア）
+    # バッチ1: 神奈川・埼玉・北関東・北海道・関西・愛知（12エリア）
     [
         ("大宮駅",     "https://www.athome.co.jp/rent_store/saitama/omiya-st",           10, None),
+        ("南越谷駅",   "https://www.athome.co.jp/rent_store/saitama/minamikoshigaya-st", 10, None),
         ("上大岡駅",   "https://www.athome.co.jp/rent_store/kanagawa/kamiooka-st",       10, None),
         ("水戸駅",     "https://www.athome.co.jp/rent_store/ibaraki/mito-st",            15, None),
         ("研究学園駅", "https://www.athome.co.jp/rent_store/ibaraki/kenkyugakuen-st",    15, None),
