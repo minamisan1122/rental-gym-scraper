@@ -25,6 +25,7 @@ CHATWORK_ROOM_ID   = os.environ.get("CHATWORK_ROOM_ID", "258471022")
 DATA_DIR           = os.environ.get("DATA_DIR", ".")
 SEEN_FILE          = os.path.join(DATA_DIR, "seen_properties.json")
 BATCH_FILE         = os.path.join(DATA_DIR, "current_batch.json")
+HOMES_INIT_FILE    = os.path.join(DATA_DIR, "homes_initialized.json")
 SCRAPERAPI_KEY     = os.environ.get("SCRAPERAPI_KEY")
 
 # Chromeバージョンをランダムローテーションしてフィンガープリントを分散させる
@@ -53,41 +54,45 @@ def get_headers(ua: str) -> dict:
 HEADERS = get_headers(CHROME_PROFILES[3][1])
 
 # ── エリア定義（バッチ分割） ────────────────────────────────────
-# ScraperAPI移行後、bot検知リスクは低減。23エリアを2バッチで3時間おきに処理。
-# (エリア名, ベースURL, 徒歩分数上限, 家賃下限)
+# ScraperAPI移行後、bot検知リスクは低減。27エリアを2バッチで3時間おきに処理。
+# アットホームとHOME'Sの2サイトを同じ条件で巡回する。
+# (エリア名, アットホームURL, 徒歩分数上限, 家賃下限, HOME'Sパス, HOME'Sの対象駅名)
+# HOME'Sパス: /chintai/tempo/ 以下。駅コードはHOME'S固有のため sitemap・沿線ページで確認済み。
+# HOME'Sの対象駅名: HOME'Sは1物件に複数駅を併記するため、この駅の徒歩分数だけを採用する。
+#                  Noneは市区指定エリア（駅指定なし）で、最寄り駅の徒歩分数を採用する。
 BATCHES = [
     # バッチ0: 東京・神奈川・愛知（13エリア・全て徒歩10分）
     [
-        ("錦糸町駅",   "https://www.athome.co.jp/rent_store/tokyo/kinshicho-st",         10, None),
-        ("小岩駅",     "https://www.athome.co.jp/rent_store/tokyo/koiwa-st",             10, None),
-        ("新小岩駅",   "https://www.athome.co.jp/rent_store/tokyo/shinkoiwa-st",         10, None),
-        ("蒲田駅",     "https://www.athome.co.jp/rent_store/tokyo/kamata-st",            10, None),
-        ("練馬駅",     "https://www.athome.co.jp/rent_store/tokyo/nerima-st",            10, None),
-        ("赤羽駅",     "https://www.athome.co.jp/rent_store/tokyo/akabane-st",           10, None),
-        ("調布駅",     "https://www.athome.co.jp/rent_store/tokyo/chofu-st",             10, None),
-        ("府中駅",     "https://www.athome.co.jp/rent_store/tokyo/fuchu-st",             10, None),
-        ("中央林間駅", "https://www.athome.co.jp/rent_store/kanagawa/chuorinkan-st",     10, None),
-        ("新横浜駅",   "https://www.athome.co.jp/rent_store/kanagawa/shinyokohama-st",   10, None),
-        ("武蔵小杉駅", "https://www.athome.co.jp/rent_store/kanagawa/musashikosugi-st",  10, None),
-        ("登戸駅",     "https://www.athome.co.jp/rent_store/kanagawa/noborito-st",       10, None),
-        ("金山駅",     "https://www.athome.co.jp/rent_store/aichi/kanayama-st",          10, None),
+        ("錦糸町駅",   "https://www.athome.co.jp/rent_store/tokyo/kinshicho-st",         10, None, "tokyo/kinshicho_00207-st",        "錦糸町"),
+        ("小岩駅",     "https://www.athome.co.jp/rent_store/tokyo/koiwa-st",             10, None, "tokyo/koiwa_01928-st",            "小岩"),
+        ("新小岩駅",   "https://www.athome.co.jp/rent_store/tokyo/shinkoiwa-st",         10, None, "tokyo/shinkoiwa_01929-st",        "新小岩"),
+        ("蒲田駅",     "https://www.athome.co.jp/rent_store/tokyo/kamata-st",            10, None, "tokyo/kamata_00605-st",           "蒲田"),
+        ("練馬駅",     "https://www.athome.co.jp/rent_store/tokyo/nerima-st",            10, None, "tokyo/nerima_04788-st",           "練馬"),
+        ("赤羽駅",     "https://www.athome.co.jp/rent_store/tokyo/akabane-st",           10, None, "tokyo/akabane_00533-st",          "赤羽"),
+        ("調布駅",     "https://www.athome.co.jp/rent_store/tokyo/chofu-st",             10, None, "tokyo/chofu_04941-st",            "調布"),
+        ("府中駅",     "https://www.athome.co.jp/rent_store/tokyo/fuchu-st",             10, None, "tokyo/fuchu_04947-st",            "府中"),
+        ("中央林間駅", "https://www.athome.co.jp/rent_store/kanagawa/chuorinkan-st",     10, None, "kanagawa/chuorinkan_05030-st",    "中央林間"),
+        ("新横浜駅",   "https://www.athome.co.jp/rent_store/kanagawa/shinyokohama-st",   10, None, "kanagawa/shinyokohama_00012-st",  "新横浜"),
+        ("武蔵小杉駅", "https://www.athome.co.jp/rent_store/kanagawa/musashikosugi-st",  10, None, "kanagawa/musashikosugi_00657-st", "武蔵小杉"),
+        ("登戸駅",     "https://www.athome.co.jp/rent_store/kanagawa/noborito-st",       10, None, "kanagawa/noborito_00664-st",      "登戸"),
+        ("金山駅",     "https://www.athome.co.jp/rent_store/aichi/kanayama-st",          10, None, "aichi/kanayama_02071-st",         "金山"),
     ],
     # バッチ1: 神奈川・埼玉・北関東・北海道・関西・愛知（14エリア）
     [
-        ("大宮駅",     "https://www.athome.co.jp/rent_store/saitama/omiya-st",           10, None),
-        ("南越谷駅",   "https://www.athome.co.jp/rent_store/saitama/minamikoshigaya-st", 10, None),
-        ("上大岡駅",   "https://www.athome.co.jp/rent_store/kanagawa/kamiooka-st",       10, None),
-        ("溝の口駅",   "https://www.athome.co.jp/rent_store/kanagawa/musashimizonokuchi-st", 10, None),
-        ("新百合ヶ丘駅","https://www.athome.co.jp/rent_store/kanagawa/shinyurigaoka-st",  10, None),
-        ("水戸駅",     "https://www.athome.co.jp/rent_store/ibaraki/mito-st",            15, None),
-        ("研究学園駅", "https://www.athome.co.jp/rent_store/ibaraki/kenkyugakuen-st",    15, None),
-        ("宇都宮駅",   "https://www.athome.co.jp/rent_store/tochigi/utsunomiya-st",      15, None),
-        ("豊平区",       "https://www.athome.co.jp/rent_office/hokkaido/sapporo_toyohira-city", 10, None),
-        ("豊平公園駅",   "https://www.athome.co.jp/rent_store/hokkaido/toyohirakoen-st",        15, None),
-        ("豊中駅",       "https://www.athome.co.jp/rent_store/osaka/toyonaka-st",               10, None),
-        ("JR奈良駅",     "https://www.athome.co.jp/rent_store/nara/nara-st",                    15, None),
-        ("近鉄奈良駅",   "https://www.athome.co.jp/rent_store/nara/kintetsunara-st",            15, None),
-        ("春日井駅",     "https://www.athome.co.jp/rent_store/aichi/kasugai-st",                10, None),
+        ("大宮駅",     "https://www.athome.co.jp/rent_store/saitama/omiya-st",           10, None, "saitama/omiya_00040-st",          "大宮"),
+        ("南越谷駅",   "https://www.athome.co.jp/rent_store/saitama/minamikoshigaya-st", 10, None, "saitama/minamikoshigaya_00699-st", "南越谷"),
+        ("上大岡駅",   "https://www.athome.co.jp/rent_store/kanagawa/kamiooka-st",       10, None, "kanagawa/kamiooka_05163-st",      "上大岡"),
+        ("溝の口駅",   "https://www.athome.co.jp/rent_store/kanagawa/musashimizonokuchi-st", 10, None, "kanagawa/mizonokuchi_05098-st", "溝の口"),
+        ("新百合ヶ丘駅","https://www.athome.co.jp/rent_store/kanagawa/shinyurigaoka-st",  10, None, "kanagawa/shinyurigaoka_05007-st", "新百合ヶ丘"),
+        ("水戸駅",     "https://www.athome.co.jp/rent_store/ibaraki/mito-st",            15, None, "ibaraki/mito_00141-st",           "水戸"),
+        ("研究学園駅", "https://www.athome.co.jp/rent_store/ibaraki/kenkyugakuen-st",    15, None, "ibaraki/kenkyugakuen_09944-st",   "研究学園"),
+        ("宇都宮駅",   "https://www.athome.co.jp/rent_store/tochigi/utsunomiya-st",      15, None, "tochigi/utsunomiya_00042-st",     "宇都宮"),
+        ("豊平区",       "https://www.athome.co.jp/rent_office/hokkaido/sapporo_toyohira-city", 10, None, "hokkaido/sapporo_toyohira-city", None),
+        ("豊平公園駅",   "https://www.athome.co.jp/rent_store/hokkaido/toyohirakoen-st",        15, None, "hokkaido/toyohirakoen_07567-st", "豊平公園"),
+        ("豊中駅",       "https://www.athome.co.jp/rent_store/osaka/toyonaka-st",               10, None, "osaka/toyonaka_06138-st",     "豊中"),
+        ("JR奈良駅",     "https://www.athome.co.jp/rent_store/nara/nara-st",                    15, None, "nara/nara_03277-st",          "奈良"),
+        ("近鉄奈良駅",   "https://www.athome.co.jp/rent_store/nara/kintetsunara-st",            15, None, "nara/kintetsunara_05827-st",  "近鉄奈良"),
+        ("春日井駅",     "https://www.athome.co.jp/rent_store/aichi/kasugai-st",                10, None, "aichi/kasugai_02263-st",      "春日井"),
     ],
 ]
 NUM_BATCHES = len(BATCHES)
@@ -106,6 +111,17 @@ def load_batch() -> int:
 def save_batch(batch_num: int):
     with open(BATCH_FILE, "w") as f:
         json.dump({"batch": batch_num}, f)
+
+def load_homes_init() -> set:
+    """HOME'S巡回済みエリア。既存物件の一斉通知を防ぐため、エリア単位で初回登録を管理する。"""
+    if os.path.exists(HOMES_INIT_FILE):
+        with open(HOMES_INIT_FILE) as f:
+            return set(json.load(f))
+    return set()
+
+def save_homes_init(areas: set):
+    with open(HOMES_INIT_FILE, "w") as f:
+        json.dump(sorted(areas), f, ensure_ascii=False)
 
 def load_seen() -> dict:
     if os.path.exists(SEEN_FILE):
@@ -171,6 +187,9 @@ def fetch_scraperapi(url: str, retries: int = 3, wait: int = 15) -> str | None:
                 params={"api_key": SCRAPERAPI_KEY, "url": url, "premium": "true"},
                 timeout=60,
             )
+            if r.status_code == 404:
+                print(f"  404 スキップ: {url}")
+                return None  # ページ切れ等。リトライしても無駄なので即終了する
             r.raise_for_status()
             return r.text
         except Exception as e:
@@ -248,7 +267,7 @@ def send_chatwork(msg: str) -> bool:
             success = False
     return success
 
-def format_message(area_name: str, prop: dict) -> str:
+def format_message(area_name: str, prop: dict, source: str = "アットホーム") -> str:
     if prop.get("rent_man") is not None:
         r = prop["rent_man"]
         rent = f"{r:.1f}万円/月" if r != int(r) else f"{int(r)}万円/月"
@@ -263,6 +282,7 @@ def format_message(area_name: str, prop: dict) -> str:
         f"[toall]\n[info][title]🏋 新着賃貸【{area_name}エリア】\n{name}[/title]\n"
         f"URL：{url}\n\n"
         f"【物件情報】\n"
+        f"・掲載元　：{source}\n"
         f"・家賃　　：{rent}\n"
         f"・面積　　：{area}\n"
         f"・アクセス：{area_name} {walk}\n"
@@ -413,6 +433,196 @@ def scrape_area(area_name: str, base_url: str, walk_limit: int,
 
 
 # ══════════════════════════════════════════════════════════════
+#  スクレイピング（HOME'S）
+# ══════════════════════════════════════════════════════════════
+
+HOMES_BASE   = "https://www.homes.co.jp/chintai/tempo"
+HOMES_BID_RE = re.compile(r"/chintai/b-(\d+)/")
+# HOME'Sのプルダウンが受け付ける値のみ指定可（それ以外はポストフィルタに任せる）
+HOMES_WALK_OPTIONS = (1, 5, 7, 10, 15, 20)
+
+def build_homes_url(homes_path: str, walk_limit: int, page: int) -> str:
+    """アットホームと違いHOME'SはURLパラメータで絞り込めるので、条件を渡して取得件数を減らす。"""
+    q = [
+        f"cond%5Bhousearea%5D={AREA_MIN_SQM}",
+        f"cond%5Bhouseareah%5D={AREA_MAX_SQM}",
+        f"cond%5Bmonthmoneyroomh%5D={RENT_MAX_MAN}",
+    ]
+    if walk_limit in HOMES_WALK_OPTIONS:
+        q.append(f"cond%5Bwalkminutesh%5D={walk_limit}")
+    if page > 1:
+        q.append(f"page={page}")
+    return f"{HOMES_BASE}/{homes_path}/list/?" + "&".join(q)
+
+def parse_homes_walk(text: str, station: str | None) -> int | None:
+    """対象駅の徒歩分数だけを取る。
+
+    HOME'Sは1物件に複数駅を併記し、対象駅が「3.6km」表記で他駅が「徒歩2分」のことがある。
+    単純に最初の「徒歩N分」を拾うと別の駅の分数で通過してしまうため、駅名で限定する。
+    """
+    if station is None:
+        mins = [int(m) for m in re.findall(r"徒歩\s*(\d+)\s*分", text)]
+        return min(mins) if mins else None
+    # 「近鉄奈良駅」を「奈良駅」で誤マッチしないよう、駅名の直前が区切り文字であることを要求する
+    m = re.search(rf"(?:^|[\s|｜/])({re.escape(station)})駅\s*徒歩\s*(\d+)\s*分", text)
+    return int(m.group(2)) if m else None
+
+def _homes_cell_index(table, keyword: str) -> int | None:
+    head = table.select_one("tr")
+    if not head:
+        return None
+    for i, c in enumerate(head.select("th,td")):
+        if keyword in c.get_text(strip=True):
+            return i
+    return None
+
+def parse_homes_page(html: str, station: str | None) -> list[dict]:
+    soup = BeautifulSoup(html, "html.parser")
+    props = []
+    for b in soup.select("div.mod-mergeBuilding--rent"):
+        link = b.select_one("a[href*='/chintai/b-']")
+        if not link:
+            continue
+        m = HOMES_BID_RE.search(link["href"])
+        if not m:
+            continue
+        bid = m.group(1)
+
+        nm_span = b.select_one("span.bukkenName")
+        name = nm_span.get_text(strip=True) if nm_span else ""
+
+        btext = b.get_text(" ", strip=True)
+        walk = parse_homes_walk(btext, station)
+
+        # 建物ブロックには「所在地等のスペック表」と「部屋一覧表」がある。賃料列を持つ後者を使う
+        table = None
+        for t in b.select("table"):
+            head = t.select_one("tr")
+            if head and "賃料" in head.get_text():
+                table = t
+                break
+        if table is None:
+            continue
+
+        # 敷金欄に「430万円」等が入るため、列位置を特定して賃料・面積を取る
+        i_rent = _homes_cell_index(table, "賃料")
+        i_area = _homes_cell_index(table, "面積")
+        i_room = _homes_cell_index(table, "部屋")
+
+        rows = [tr for tr in table.select("tr") if tr.select("td") and "万円" in tr.get_text()]
+        for tr in rows:
+            tds = tr.select("td")
+
+            def cell(i):
+                return tds[i].get_text(" ", strip=True) if i is not None and i < len(tds) else ""
+
+            rent_man = None
+            mm = re.search(r"([\d.]+)\s*万円", cell(i_rent))
+            if mm:
+                rent_man = float(mm.group(1))
+
+            area_sqm = None
+            mm = re.search(r"([\d.]+)\s*m[²2]", cell(i_area))
+            if mm is None:
+                mm = re.search(r"面積/坪数\s*([\d.]+)\s*m[²2]", btext)
+            if mm:
+                area_sqm = float(mm.group(1))
+
+            room = cell(i_room)
+            if room in ("", "-", "‐", "―", "－"):  # 部屋番号なしの物件は「-」表記
+                room = ""
+            props.append({
+                "key":      f"homes_{bid}" if len(rows) == 1 else f"homes_{bid}_{room}",
+                "url":      f"https://www.homes.co.jp/chintai/b-{bid}/",
+                "name":     f"{name} {room}".strip() if room else name,
+                "rent_man": rent_man,
+                "area_sqm": area_sqm,
+                "walk_min": walk,
+                "text":     btext,
+            })
+    return props
+
+def scrape_homes_area(area_name: str, homes_path: str, station: str | None,
+                      walk_limit: int, today_str: str, seen: dict,
+                      is_first_run: bool, rent_min: int | None = None) -> tuple[int, bool]:
+    """戻り値: (通知件数, 1ページ目の取得に成功したか)"""
+    notified = 0
+    fetched_ok = False
+
+    for page in range(1, 4):
+        html = fetch_scraperapi(build_homes_url(homes_path, walk_limit, page))
+        if html is None:
+            break
+        if page == 1:
+            fetched_ok = True
+
+        props = parse_homes_page(html, station)
+        if not props:
+            print(f"  HOME'S 物件なし（ページ{page}）")
+            break
+
+        # 次ページのリンクが無ければ最終ページ。無駄な404リクエストを避ける
+        has_next = f"page={page + 1}" in html
+
+        print(f"  HOME'S {area_name} page{page}: {len(props)}件")
+        found_new = False
+
+        for p in props:
+            key = p["key"]
+            if key in seen:
+                continue
+            found_new = True
+
+            if is_first_run:
+                seen[key] = today_str
+                continue
+
+            if "スケルトン" in p["text"]:
+                seen[key] = today_str
+                print(f"    スケルトンNG: スキップ")
+                continue
+
+            if p["area_sqm"] is not None:
+                if p["area_sqm"] < AREA_MIN_SQM or p["area_sqm"] >= AREA_MAX_SQM:
+                    seen[key] = today_str
+                    print(f"    面積NG: {p['area_sqm']}㎡")
+                    continue
+
+            if p["walk_min"] is None:
+                seen[key] = today_str
+                print(f"    徒歩NG: {area_name}からの徒歩分数が不明のためスキップ")
+                continue
+            if p["walk_min"] > walk_limit:
+                seen[key] = today_str
+                print(f"    徒歩NG: {p['walk_min']}分（上限{walk_limit}分）")
+                continue
+
+            if p["rent_man"] is not None and p["rent_man"] > RENT_MAX_MAN:
+                seen[key] = today_str
+                print(f"    家賃NG（上限超過）: {p['rent_man']}万円")
+                continue
+            if rent_min is not None and p["rent_man"] is not None and p["rent_man"] < rent_min:
+                seen[key] = today_str
+                print(f"    家賃NG（下限未満）: {p['rent_man']}万円")
+                continue
+
+            if send_chatwork(format_message(area_name, p, source="HOME'S")):
+                seen[key] = today_str  # 送信成功後にのみseen登録
+                print(f"  ✅ HOME'S {area_name} {p['name'][:30]} → 通知送信")
+                notified += 1
+            else:
+                print(f"  ⚠ 通知失敗（次回再試行）: HOME'S {area_name} {p['name'][:30]}")
+            time.sleep(1)
+
+        if not found_new or not has_next:
+            break
+
+        time.sleep(random.uniform(5, 10))
+
+    return notified, fetched_ok
+
+
+# ══════════════════════════════════════════════════════════════
 #  メイン
 # ══════════════════════════════════════════════════════════════
 
@@ -433,14 +643,27 @@ def main():
     if is_first_run:
         print("【初回実行】物件IDを登録するのみ（通知なし）")
 
+    homes_init = load_homes_init()
+
     total = 0
-    for area_name, base_url, walk_limit, rent_min in areas:
+    for area_name, base_url, walk_limit, rent_min, homes_path, homes_station in areas:
         print(f"\n== {area_name} ==")
         total += scrape_area(area_name, base_url, walk_limit, today_str, seen, is_first_run,
                              rent_min)
 
+        # HOME'Sはエリア単位で初回登録する。既存物件を一斉通知してしまうのを防ぐため
+        homes_first = is_first_run or area_name not in homes_init
+        if homes_first:
+            print(f"  HOME'S【{area_name} 初回】既存物件を登録するのみ（通知なし）")
+        n, ok = scrape_homes_area(area_name, homes_path, homes_station, walk_limit,
+                                  today_str, seen, homes_first, rent_min)
+        total += n
+        if ok:
+            homes_init.add(area_name)  # 取得できた時だけ登録済みにする（失敗時の一斉通知を防ぐ）
+
     print(f"\n通知合計: {total}件")
     save_seen(seen)
+    save_homes_init(homes_init)
     save_batch(next_batch)
     print("完了")
 
