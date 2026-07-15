@@ -54,14 +54,14 @@ def get_headers(ua: str) -> dict:
 HEADERS = get_headers(CHROME_PROFILES[3][1])
 
 # ── エリア定義（バッチ分割） ────────────────────────────────────
-# ScraperAPI移行後、bot検知リスクは低減。27エリアを2バッチで3時間おきに処理。
+# ScraperAPI移行後、bot検知リスクは低減。30エリアを2バッチで3時間おきに処理。
 # アットホームとHOME'Sの2サイトを同じ条件で巡回する。
 # (エリア名, アットホームURL, 徒歩分数上限, 家賃下限, HOME'Sパス, HOME'Sの対象駅名)
 # HOME'Sパス: /chintai/tempo/ 以下。駅コードはHOME'S固有のため sitemap・沿線ページで確認済み。
 # HOME'Sの対象駅名: HOME'Sは1物件に複数駅を併記するため、この駅の徒歩分数だけを採用する。
 #                  Noneは市区指定エリア（駅指定なし）で、最寄り駅の徒歩分数を採用する。
 BATCHES = [
-    # バッチ0: 東京・神奈川・愛知（13エリア・全て徒歩10分）
+    # バッチ0: 東京・神奈川・愛知（14エリア・全て徒歩10分）
     [
         ("錦糸町駅",   "https://www.athome.co.jp/rent_store/tokyo/kinshicho-st",         10, None, "tokyo/kinshicho_00207-st",        "錦糸町"),
         ("小岩駅",     "https://www.athome.co.jp/rent_store/tokyo/koiwa-st",             10, None, "tokyo/koiwa_01928-st",            "小岩"),
@@ -76,8 +76,9 @@ BATCHES = [
         ("武蔵小杉駅", "https://www.athome.co.jp/rent_store/kanagawa/musashikosugi-st",  10, None, "kanagawa/musashikosugi_00657-st", "武蔵小杉"),
         ("登戸駅",     "https://www.athome.co.jp/rent_store/kanagawa/noborito-st",       10, None, "kanagawa/noborito_00664-st",      "登戸"),
         ("金山駅",     "https://www.athome.co.jp/rent_store/aichi/kanayama-st",          10, None, "aichi/kanayama_02071-st",         "金山"),
+        ("春日井駅",   "https://www.athome.co.jp/rent_store/aichi/kasugai-st",           10, None, "aichi/kasugai_02263-st",          "春日井"),
     ],
-    # バッチ1: 神奈川・埼玉・北関東・北海道・関西・愛知（14エリア）
+    # バッチ1: 神奈川・埼玉・北関東・北海道・関西（16エリア）
     [
         ("大宮駅",     "https://www.athome.co.jp/rent_store/saitama/omiya-st",           10, None, "saitama/omiya_00040-st",          "大宮"),
         ("南越谷駅",   "https://www.athome.co.jp/rent_store/saitama/minamikoshigaya-st", 10, None, "saitama/minamikoshigaya_00699-st", "南越谷"),
@@ -90,9 +91,11 @@ BATCHES = [
         ("豊平区",       "https://www.athome.co.jp/rent_office/hokkaido/sapporo_toyohira-city", 10, None, "hokkaido/sapporo_toyohira-city", None),
         ("豊平公園駅",   "https://www.athome.co.jp/rent_store/hokkaido/toyohirakoen-st",        15, None, "hokkaido/toyohirakoen_07567-st", "豊平公園"),
         ("豊中駅",       "https://www.athome.co.jp/rent_store/osaka/toyonaka-st",               10, None, "osaka/toyonaka_06138-st",     "豊中"),
+        ("谷町四丁目駅", "https://www.athome.co.jp/rent_store/osaka/tanimachiyonchome-st",      10, None, "osaka/tanimachiyonchome_06498-st", "谷町四丁目"),
+        ("天王寺駅",     "https://www.athome.co.jp/rent_store/osaka/tennoji-st",                10, None, "osaka/tennoji_00280-st",      "天王寺"),
+        ("枚方市駅",     "https://www.athome.co.jp/rent_store/osaka/hirakatashi-st",            10, None, "osaka/hirakatashi_06037-st",  "枚方市"),
         ("JR奈良駅",     "https://www.athome.co.jp/rent_store/nara/nara-st",                    15, None, "nara/nara_03277-st",          "奈良"),
         ("近鉄奈良駅",   "https://www.athome.co.jp/rent_store/nara/kintetsunara-st",            15, None, "nara/kintetsunara_05827-st",  "近鉄奈良"),
-        ("春日井駅",     "https://www.athome.co.jp/rent_store/aichi/kasugai-st",                10, None, "aichi/kasugai_02263-st",      "春日井"),
     ],
 ]
 NUM_BATCHES = len(BATCHES)
