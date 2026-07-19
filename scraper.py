@@ -78,7 +78,7 @@ BATCHES = [
         ("金山駅",     "https://www.athome.co.jp/rent_store/aichi/kanayama-st",          10, None, "aichi/kanayama_02071-st",         "金山"),
         ("春日井駅",   "https://www.athome.co.jp/rent_store/aichi/kasugai-st",           10, None, "aichi/kasugai_02263-st",          "春日井"),
     ],
-    # バッチ1: 神奈川・埼玉・北関東・北海道・関西（16エリア）
+    # バッチ1: 神奈川・埼玉・北関東・北海道・関西（17エリア）
     [
         ("大宮駅",     "https://www.athome.co.jp/rent_store/saitama/omiya-st",           10, None, "saitama/omiya_00040-st",          "大宮"),
         ("南越谷駅",   "https://www.athome.co.jp/rent_store/saitama/minamikoshigaya-st", 10, None, "saitama/minamikoshigaya_00699-st", "南越谷"),
@@ -94,6 +94,7 @@ BATCHES = [
         ("谷町四丁目駅", "https://www.athome.co.jp/rent_store/osaka/tanimachiyonchome-st",      10, None, "osaka/tanimachiyonchome_06498-st", "谷町四丁目"),
         ("天王寺駅",     "https://www.athome.co.jp/rent_store/osaka/tennoji-st",                10, None, "osaka/tennoji_00280-st",      "天王寺"),
         ("枚方市駅",     "https://www.athome.co.jp/rent_store/osaka/hirakatashi-st",            10, None, "osaka/hirakatashi_06037-st",  "枚方市"),
+        ("堺東駅",       "https://www.athome.co.jp/rent_store/osaka/sakaihigashi-st",           10, None, "osaka/sakaihigashi_05968-st", "堺東"),
         ("JR奈良駅",     "https://www.athome.co.jp/rent_store/nara/nara-st",                    15, None, "nara/nara_03277-st",          "奈良"),
         ("近鉄奈良駅",   "https://www.athome.co.jp/rent_store/nara/kintetsunara-st",            15, None, "nara/kintetsunara_05827-st",  "近鉄奈良"),
     ],
