@@ -182,27 +182,61 @@ def fetch(url: str, session=None, impersonate: str = "chrome124", ua: str = "") 
         return None
 
 
+# ブロック時はathomeが認証中ページ、HOME'SがAWS WAFの数KBページを返す。
+# 正常な一覧ページは100KB以上あるので、極端に小さい応答もブロック扱いにする。
+MIN_VALID_BYTES = 5000
+_NOT_FOUND = object()
+
+def _looks_blocked(text: str) -> bool:
+    return len(text) < MIN_VALID_BYTES or _is_blocked(text)
+
+def _scraperapi_once(url: str, premium: bool) -> "str | object | None":
+    """戻り値: HTML / _NOT_FOUND(404) / None(通信失敗)"""
+    label = "premium" if premium else "標準"
+    params = {"api_key": SCRAPERAPI_KEY, "url": url}
+    if premium:
+        params["premium"] = "true"
+    try:
+        r = requests.get("http://api.scraperapi.com", params=params, timeout=60)
+        if r.status_code == 404:
+            print(f"  404 スキップ: {url}")
+            return _NOT_FOUND  # ページ切れ等。リトライしても無駄なので即終了する
+        r.raise_for_status()
+        return r.text
+    except Exception as e:
+        print(f"  ScraperAPI error ({label}): {e}")
+        return None
+
 def fetch_scraperapi(url: str, retries: int = 3, wait: int = 15) -> str | None:
-    """ScraperAPI経由でフェッチ（PerimeterX/Reese84 bot検知回避）"""
+    """まず標準プロキシで取得し、ブロックされた時だけpremiumに切り替える。
+
+    ScraperAPIは標準1クレジット・premium10クレジット。2026-08-03の実測では
+    athome・HOME'Sとも標準で15/15成功したため、premiumは保険に回して消費を1/10にする。
+    """
     if not SCRAPERAPI_KEY:
         print("  ⚠ SCRAPERAPI_KEY が未設定")
         return None
     for attempt in range(1, retries + 1):
-        try:
-            r = requests.get(
-                "http://api.scraperapi.com",
-                params={"api_key": SCRAPERAPI_KEY, "url": url, "premium": "true"},
-                timeout=60,
-            )
-            if r.status_code == 404:
-                print(f"  404 スキップ: {url}")
-                return None  # ページ切れ等。リトライしても無駄なので即終了する
-            r.raise_for_status()
-            return r.text
-        except Exception as e:
-            print(f"  ScraperAPI error (試行{attempt}/{retries}): {e}")
-            if attempt < retries:
-                time.sleep(wait)
+        # ① 標準プロキシ（1クレジット）
+        text = _scraperapi_once(url, premium=False)
+        if text is _NOT_FOUND:
+            return None
+        if text and not _looks_blocked(text):
+            return text
+        if text:
+            print(f"  標準プロキシでブロック検出 → premiumで再試行: {url}")
+
+        # ② 標準がだめな時だけpremium（10クレジット）
+        text = _scraperapi_once(url, premium=True)
+        if text is _NOT_FOUND:
+            return None
+        if text:
+            if _looks_blocked(text):
+                print(f"  ⚠ premiumでもブロックの可能性（{len(text)}文字）: {url}")
+            return text
+
+        if attempt < retries:
+            time.sleep(wait)
     return None
 
 def fetch_with_retry(url: str, impersonate: str, ua: str) -> str | None:
