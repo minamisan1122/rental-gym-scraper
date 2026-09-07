@@ -54,7 +54,7 @@ def get_headers(ua: str) -> dict:
 HEADERS = get_headers(CHROME_PROFILES[3][1])
 
 # ── エリア定義（バッチ分割） ────────────────────────────────────
-# ScraperAPI移行後、bot検知リスクは低減。34エリアを2バッチで3時間おきに処理。
+# ScraperAPI移行後、bot検知リスクは低減。35エリアを2バッチで3時間おきに処理。
 # アットホームとHOME'Sの2サイトを同じ条件で巡回する。
 # (エリア名, アットホームURL, 徒歩分数上限, 家賃下限, HOME'Sパス, HOME'Sの対象駅名)
 # HOME'Sパス: /chintai/tempo/ 以下。駅コードはHOME'S固有のため sitemap・沿線ページで確認済み。
@@ -81,7 +81,7 @@ BATCHES = [
         ("大和駅",     "https://www.athome.co.jp/rent_store/kanagawa/yamato-st",         10, None, "kanagawa/yamato_05033-st",        "大和"),
         ("金山駅",     "https://www.athome.co.jp/rent_store/aichi/kanayama-st",          10, None, "aichi/kanayama_02071-st",         "金山"),
     ],
-    # バッチ1: 神奈川・埼玉・北関東・北海道・関西（17エリア）
+    # バッチ1: 神奈川・埼玉・北関東・東北・北海道・関西（18エリア）
     [
         ("大宮駅",     "https://www.athome.co.jp/rent_store/saitama/omiya-st",           10, None, "saitama/omiya_00040-st",          "大宮"),
         ("南越谷駅",   "https://www.athome.co.jp/rent_store/saitama/minamikoshigaya-st", 10, None, "saitama/minamikoshigaya_00699-st", "南越谷"),
@@ -100,6 +100,7 @@ BATCHES = [
         ("堺東駅",       "https://www.athome.co.jp/rent_store/osaka/sakaihigashi-st",           10, None, "osaka/sakaihigashi_05968-st", "堺東"),
         ("JR奈良駅",     "https://www.athome.co.jp/rent_store/nara/nara-st",                    15, None, "nara/nara_03277-st",          "奈良"),
         ("近鉄奈良駅",   "https://www.athome.co.jp/rent_store/nara/kintetsunara-st",            15, None, "nara/kintetsunara_05827-st",  "近鉄奈良"),
+        ("仙台駅",       "https://www.athome.co.jp/rent_store/miyagi/sendai-st",                15, None, "miyagi/sendai_00003-st",      "仙台"),
     ],
 ]
 NUM_BATCHES = len(BATCHES)
