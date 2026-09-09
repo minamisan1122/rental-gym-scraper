@@ -54,14 +54,14 @@ def get_headers(ua: str) -> dict:
 HEADERS = get_headers(CHROME_PROFILES[3][1])
 
 # ── エリア定義（バッチ分割） ────────────────────────────────────
-# ScraperAPI移行後、bot検知リスクは低減。35エリアを2バッチで3時間おきに処理。
+# ScraperAPI移行後、bot検知リスクは低減。36エリアを2バッチで3時間おきに処理。
 # アットホームとHOME'Sの2サイトを同じ条件で巡回する。
 # (エリア名, アットホームURL, 徒歩分数上限, 家賃下限, HOME'Sパス, HOME'Sの対象駅名)
 # HOME'Sパス: /chintai/tempo/ 以下。駅コードはHOME'S固有のため sitemap・沿線ページで確認済み。
 # HOME'Sの対象駅名: HOME'Sは1物件に複数駅を併記するため、この駅の徒歩分数だけを採用する。
 #                  Noneは市区指定エリア（駅指定なし）で、最寄り駅の徒歩分数を採用する。
 BATCHES = [
-    # バッチ0: 東京・神奈川・愛知（17エリア・全て徒歩10分）
+    # バッチ0: 東京・神奈川・千葉・愛知（18エリア）
     [
         ("錦糸町駅",   "https://www.athome.co.jp/rent_store/tokyo/kinshicho-st",         10, None, "tokyo/kinshicho_00207-st",        "錦糸町"),
         ("小岩駅",     "https://www.athome.co.jp/rent_store/tokyo/koiwa-st",             10, None, "tokyo/koiwa_01928-st",            "小岩"),
@@ -80,6 +80,7 @@ BATCHES = [
         ("湘南台駅",   "https://www.athome.co.jp/rent_store/kanagawa/shonandai-st",      10, None, "kanagawa/shonandai_05037-st",     "湘南台"),
         ("大和駅",     "https://www.athome.co.jp/rent_store/kanagawa/yamato-st",         10, None, "kanagawa/yamato_05033-st",        "大和"),
         ("金山駅",     "https://www.athome.co.jp/rent_store/aichi/kanayama-st",          10, None, "aichi/kanayama_02071-st",         "金山"),
+        ("浦安駅",     "https://www.athome.co.jp/rent_store/chiba/urayasu-st",           15, None, "chiba/urayasu_06359-st",          "浦安"),
     ],
     # バッチ1: 神奈川・埼玉・北関東・東北・北海道・関西（18エリア）
     [
