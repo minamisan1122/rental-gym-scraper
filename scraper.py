@@ -61,7 +61,7 @@ HEADERS = get_headers(CHROME_PROFILES[3][1])
 # HOME'Sの対象駅名: HOME'Sは1物件に複数駅を併記するため、この駅の徒歩分数だけを採用する。
 #                  Noneは市区指定エリア（駅指定なし）で、最寄り駅の徒歩分数を採用する。
 BATCHES = [
-    # バッチ0: 東京・神奈川・千葉・愛知（18エリア）
+    # バッチ0: 東京・神奈川（16エリア）
     [
         ("錦糸町駅",   "https://www.athome.co.jp/rent_store/tokyo/kinshicho-st",         10, None, "tokyo/kinshicho_00207-st",        "錦糸町"),
         ("小岩駅",     "https://www.athome.co.jp/rent_store/tokyo/koiwa-st",             10, None, "tokyo/koiwa_01928-st",            "小岩"),
@@ -79,12 +79,11 @@ BATCHES = [
         ("橋本駅",     "https://www.athome.co.jp/rent_store/kanagawa/hashimoto-st",      10, None, "kanagawa/hashimoto_00728-st",     "橋本"),
         ("湘南台駅",   "https://www.athome.co.jp/rent_store/kanagawa/shonandai-st",      10, None, "kanagawa/shonandai_05037-st",     "湘南台"),
         ("大和駅",     "https://www.athome.co.jp/rent_store/kanagawa/yamato-st",         10, None, "kanagawa/yamato_05033-st",        "大和"),
+    ],
+    # バッチ1: 愛知・千葉・神奈川・埼玉・北関東・東北・北海道・関西（16エリア）
+    [
         ("金山駅",     "https://www.athome.co.jp/rent_store/aichi/kanayama-st",          10, None, "aichi/kanayama_02071-st",         "金山"),
         ("浦安駅",     "https://www.athome.co.jp/rent_store/chiba/urayasu-st",           15, None, "chiba/urayasu_06359-st",          "浦安"),
-    ],
-    # バッチ1: 神奈川・埼玉・北関東・東北・北海道・関西（18エリア）
-    [
-        ("大宮駅",     "https://www.athome.co.jp/rent_store/saitama/omiya-st",           10, None, "saitama/omiya_00040-st",          "大宮"),
         ("南越谷駅",   "https://www.athome.co.jp/rent_store/saitama/minamikoshigaya-st", 10, None, "saitama/minamikoshigaya_00699-st", "南越谷"),
         ("上大岡駅",   "https://www.athome.co.jp/rent_store/kanagawa/kamiooka-st",       10, None, "kanagawa/kamiooka_05163-st",      "上大岡"),
         ("溝の口駅",   "https://www.athome.co.jp/rent_store/kanagawa/musashimizonokuchi-st", 10, None, "kanagawa/mizonokuchi_05098-st", "溝の口"),
@@ -94,13 +93,10 @@ BATCHES = [
         ("宇都宮駅",   "https://www.athome.co.jp/rent_store/tochigi/utsunomiya-st",      15, None, "tochigi/utsunomiya_00042-st",     "宇都宮"),
         ("豊平区",       "https://www.athome.co.jp/rent_office/hokkaido/sapporo_toyohira-city", 10, None, "hokkaido/sapporo_toyohira-city", None),
         ("豊平公園駅",   "https://www.athome.co.jp/rent_store/hokkaido/toyohirakoen-st",        15, None, "hokkaido/toyohirakoen_07567-st", "豊平公園"),
-        ("豊中駅",       "https://www.athome.co.jp/rent_store/osaka/toyonaka-st",               10, None, "osaka/toyonaka_06138-st",     "豊中"),
         ("谷町四丁目駅", "https://www.athome.co.jp/rent_store/osaka/tanimachiyonchome-st",      10, None, "osaka/tanimachiyonchome_06498-st", "谷町四丁目"),
         ("天王寺駅",     "https://www.athome.co.jp/rent_store/osaka/tennoji-st",                10, None, "osaka/tennoji_00280-st",      "天王寺"),
         ("枚方市駅",     "https://www.athome.co.jp/rent_store/osaka/hirakatashi-st",            10, None, "osaka/hirakatashi_06037-st",  "枚方市"),
         ("堺東駅",       "https://www.athome.co.jp/rent_store/osaka/sakaihigashi-st",           10, None, "osaka/sakaihigashi_05968-st", "堺東"),
-        ("JR奈良駅",     "https://www.athome.co.jp/rent_store/nara/nara-st",                    15, None, "nara/nara_03277-st",          "奈良"),
-        ("近鉄奈良駅",   "https://www.athome.co.jp/rent_store/nara/kintetsunara-st",            15, None, "nara/kintetsunara_05827-st",  "近鉄奈良"),
         ("仙台駅",       "https://www.athome.co.jp/rent_store/miyagi/sendai-st",                15, None, "miyagi/sendai_00003-st",      "仙台"),
     ],
 ]
