@@ -61,7 +61,7 @@ HEADERS = get_headers(CHROME_PROFILES[3][1])
 # HOME'Sの対象駅名: HOME'Sは1物件に複数駅を併記するため、この駅の徒歩分数だけを採用する。
 #                  Noneは市区指定エリア（駅指定なし）で、最寄り駅の徒歩分数を採用する。
 BATCHES = [
-    # バッチ0: 東京・神奈川（16エリア）
+    # バッチ0: 東京・神奈川（15エリア）
     [
         ("錦糸町駅",   "https://www.athome.co.jp/rent_store/tokyo/kinshicho-st",         10, None, "tokyo/kinshicho_00207-st",        "錦糸町"),
         ("小岩駅",     "https://www.athome.co.jp/rent_store/tokyo/koiwa-st",             10, None, "tokyo/koiwa_01928-st",            "小岩"),
@@ -69,7 +69,6 @@ BATCHES = [
         ("蒲田駅",     "https://www.athome.co.jp/rent_store/tokyo/kamata-st",            10, None, "tokyo/kamata_00605-st",           "蒲田"),
         ("練馬駅",     "https://www.athome.co.jp/rent_store/tokyo/nerima-st",            10, None, "tokyo/nerima_04788-st",           "練馬"),
         ("赤羽駅",     "https://www.athome.co.jp/rent_store/tokyo/akabane-st",           10, None, "tokyo/akabane_00533-st",          "赤羽"),
-        ("調布駅",     "https://www.athome.co.jp/rent_store/tokyo/chofu-st",             10, None, "tokyo/chofu_04941-st",            "調布"),
         ("中央林間駅", "https://www.athome.co.jp/rent_store/kanagawa/chuorinkan-st",     10, None, "kanagawa/chuorinkan_05030-st",    "中央林間"),
         ("新横浜駅",   "https://www.athome.co.jp/rent_store/kanagawa/shinyokohama-st",   10, None, "kanagawa/shinyokohama_00012-st",  "新横浜"),
         ("武蔵小杉駅", "https://www.athome.co.jp/rent_store/kanagawa/musashikosugi-st",  10, None, "kanagawa/musashikosugi_00657-st", "武蔵小杉"),
@@ -80,7 +79,7 @@ BATCHES = [
         ("湘南台駅",   "https://www.athome.co.jp/rent_store/kanagawa/shonandai-st",      10, None, "kanagawa/shonandai_05037-st",     "湘南台"),
         ("大和駅",     "https://www.athome.co.jp/rent_store/kanagawa/yamato-st",         10, None, "kanagawa/yamato_05033-st",        "大和"),
     ],
-    # バッチ1: 愛知・千葉・神奈川・埼玉・北関東・東北・北海道・関西（16エリア）
+    # バッチ1: 愛知・千葉・神奈川・埼玉・北関東・東北・関西（14エリア）
     [
         ("金山駅",     "https://www.athome.co.jp/rent_store/aichi/kanayama-st",          10, None, "aichi/kanayama_02071-st",         "金山"),
         ("浦安駅",     "https://www.athome.co.jp/rent_store/chiba/urayasu-st",           15, None, "chiba/urayasu_06359-st",          "浦安"),
@@ -91,8 +90,6 @@ BATCHES = [
         ("水戸駅",     "https://www.athome.co.jp/rent_store/ibaraki/mito-st",            15, None, "ibaraki/mito_00141-st",           "水戸"),
         ("研究学園駅", "https://www.athome.co.jp/rent_store/ibaraki/kenkyugakuen-st",    15, None, "ibaraki/kenkyugakuen_09944-st",   "研究学園"),
         ("宇都宮駅",   "https://www.athome.co.jp/rent_store/tochigi/utsunomiya-st",      15, None, "tochigi/utsunomiya_00042-st",     "宇都宮"),
-        ("豊平区",       "https://www.athome.co.jp/rent_office/hokkaido/sapporo_toyohira-city", 10, None, "hokkaido/sapporo_toyohira-city", None),
-        ("豊平公園駅",   "https://www.athome.co.jp/rent_store/hokkaido/toyohirakoen-st",        15, None, "hokkaido/toyohirakoen_07567-st", "豊平公園"),
         ("谷町四丁目駅", "https://www.athome.co.jp/rent_store/osaka/tanimachiyonchome-st",      10, None, "osaka/tanimachiyonchome_06498-st", "谷町四丁目"),
         ("天王寺駅",     "https://www.athome.co.jp/rent_store/osaka/tennoji-st",                10, None, "osaka/tennoji_00280-st",      "天王寺"),
         ("枚方市駅",     "https://www.athome.co.jp/rent_store/osaka/hirakatashi-st",            10, None, "osaka/hirakatashi_06037-st",  "枚方市"),
