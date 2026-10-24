@@ -79,8 +79,11 @@ BATCHES = [
         ("湘南台駅",   "https://www.athome.co.jp/rent_store/kanagawa/shonandai-st",      10, None, "kanagawa/shonandai_05037-st",     "湘南台"),
         ("大和駅",     "https://www.athome.co.jp/rent_store/kanagawa/yamato-st",         10, None, "kanagawa/yamato_05033-st",        "大和"),
     ],
-    # バッチ1: 千葉・神奈川・埼玉・北関東・東北・関西（13エリア）
+    # バッチ1: 千葉・神奈川・埼玉・北関東・東北・関西（16エリア）
     [
+        ("川越駅",     "https://www.athome.co.jp/rent_store/saitama/kawagoe-st",         10, None, "saitama/kawagoe_00646-st",        "川越"),
+        ("所沢駅",     "https://www.athome.co.jp/rent_store/saitama/tokorozawa-st",      10, None, "saitama/tokorozawa_04798-st",     "所沢"),
+        ("松戸駅",     "https://www.athome.co.jp/rent_store/chiba/matsudo-st",           10, None, "chiba/matsudo_01040-st",          "松戸"),
         ("浦安駅",     "https://www.athome.co.jp/rent_store/chiba/urayasu-st",           15, None, "chiba/urayasu_06359-st",          "浦安"),
         ("南越谷駅",   "https://www.athome.co.jp/rent_store/saitama/minamikoshigaya-st", 10, None, "saitama/minamikoshigaya_00699-st", "南越谷"),
         ("上大岡駅",   "https://www.athome.co.jp/rent_store/kanagawa/kamiooka-st",       10, None, "kanagawa/kamiooka_05163-st",      "上大岡"),
